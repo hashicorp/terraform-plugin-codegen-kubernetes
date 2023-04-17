@@ -21,7 +21,6 @@ import (
 // TODO singularize blocks that are arrays, e.g containers -> container
 // TODO use enum field to add validators e.g ServiceSpec.type field
 // TODO autogenerate schema for GetResources and GetDataSources
-// TODO move templates into separate files
 
 var (
 	ref        = flag.String("ref", "", "reference to generate the Terraform schema for")
