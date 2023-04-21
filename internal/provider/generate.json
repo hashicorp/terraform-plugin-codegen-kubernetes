@@ -12,11 +12,19 @@
       },
       "ignore_fields": [
         "finalizers",
-        "managedFields"
+        "managedFields",
+        "ownerReferences",
+        "clusterName",
+        "generateName",
+        "deletionTimestamp",
+        "deletionGracePeriodSeconds",
+        "generation",
+        "selfLink"
       ],
       "computed_fields": [
         "uid",
-        "creationTimestamp"
+        "creationTimestamp",
+        "resourceVersion"
       ]
     }
   ]
