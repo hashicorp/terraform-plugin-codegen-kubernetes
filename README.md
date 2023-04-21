@@ -6,7 +6,7 @@ This repository contains the code generator for the Kubernetes provider.
 
 The code to autogenerate resources lives in [tools/codegen](./tools/codegen). You tell the generator which resources to generate in [internal/provider/generate.json](./internal/provider/generate.json).
 
-Run the generator by running `make generate` at the top level. 
+Run the generator by running `go generate` at the top level. 
 
 ## Requirements
 
