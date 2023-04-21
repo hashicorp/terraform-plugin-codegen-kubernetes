@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"go/format"
@@ -10,6 +11,7 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/getkin/kin-openapi/openapi3"
 
@@ -23,11 +25,9 @@ import (
 // TODO autogenerate schema for GetResources and GetDataSources
 
 var (
-	ref        = flag.String("ref", "", "reference to generate the Terraform schema for")
-	pkg        = flag.String("pkg", "", "name of the Go package for this resource")
-	outputFile = flag.String("o", "", "file to write the generated code to")
-	jsonFile   = flag.String("json", "", "file to read the OpenAPI v3 schema information from")
-	gofmt      = flag.Bool("fmt", true, "run the generated file through go fmt")
+	gofmt = flag.Bool("fmt", true, "run the generated files through go fmt")
+
+	cfgfile = flag.String("cfg", "gen.json", "path to the JSON configuration file for the code generator")
 )
 
 var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
@@ -43,9 +43,18 @@ func stripBackticks(str string) string {
 	return strings.ReplaceAll(str, "`", "")
 }
 
-func getBlock(name string, schema *openapi3.Schema, requiredBlock bool) TerraformBlock {
+func skipField(f string) bool {
+	for _, v := range []string{"managedFields", "ownerReferences"} {
+		if f == v {
+			return true
+		}
+	}
+	return false
+}
+
+func getSchema(name string, schema *openapi3.Schema, requiredBlock bool) TerraformSchema {
 	attributes := []TerraformAttribute{}
-	blocks := []TerraformBlock{}
+	blocks := []TerraformSchema{}
 
 	// NOTE some schemas are just a reference to another schema
 	if len(schema.AllOf) > 0 {
@@ -60,12 +69,12 @@ func getBlock(name string, schema *openapi3.Schema, requiredBlock bool) Terrafor
 		}
 	}
 	if len(properties) == 0 {
-		log.Printf("WARN: schema for %q produced an empty block\n", name)
+		log.Printf("warning: schema for %q produced an empty block\n", name)
 	}
 
 	for name, prop := range properties {
-		if name == "managedFields" {
-			// skip managedFields for now
+		// FIXME make this configurable
+		if skipField(name) {
 			continue
 		}
 
@@ -78,7 +87,7 @@ func getBlock(name string, schema *openapi3.Schema, requiredBlock bool) Terrafor
 		attributeType, elementType, err := getAttributeType(prop.Value)
 		if err != nil {
 			// this means the attribute needs to be a block
-			blocks = append(blocks, getBlock(snakify(name), prop.Value, required))
+			blocks = append(blocks, getSchema(snakify(name), prop.Value, required))
 			continue
 		}
 		attributes = append(attributes, TerraformAttribute{
@@ -90,7 +99,7 @@ func getBlock(name string, schema *openapi3.Schema, requiredBlock bool) Terrafor
 		})
 	}
 
-	block := TerraformBlock{
+	block := TerraformSchema{
 		Name:        name,
 		Description: schema.Description,
 		Attributes:  attributes,
@@ -160,50 +169,119 @@ func getAttributeType(schema *openapi3.Schema) (string, string, error) {
 	return "", "", fmt.Errorf("complex schema cannot be an attribute and must be a block")
 }
 
+type OpenAPIv3Config struct {
+	Source string `json:"source"`
+	Ref    string `json:"ref"`
+}
+
+type ResourceConfig struct {
+	Package         string          `json:"package"`
+	ResourceName    string          `json:"resource_name"`
+	Kind            string          `json:"kind"`
+	APIVersion      string          `json:"apiVersion"`
+	Filename        string          `json:"filename"`
+	OpenAPIv3Config OpenAPIv3Config `json:"openapi_v3"`
+}
+
+type Config struct {
+	ResourcesConfig []ResourceConfig `json:"resources"`
+}
+
 func main() {
 	flag.Parse()
 
-	doc, err := openapi3.NewLoader().LoadFromFile(*jsonFile)
+	f, err := os.Open(*cfgfile)
 	if err != nil {
-		log.Fatalf("error loading OpenAPI specification: %v", err)
+		log.Fatalf("could not open JSON configuration file %q: %v", *cfgfile, err)
 	}
 
-	schema, ok := doc.Components.Schemas[*ref]
-	if !ok {
-		log.Fatalf("no schema for %q exists in OpenAPI document %q", *ref, *jsonFile)
-	}
-
-	parts := strings.Split(*ref, ".")
-	kind := parts[len(parts)-1]
-	resourceName := kind
-	resource := TerraformResource{
-		Package:               *pkg,
-		ResourceName:          resourceName,
-		TerraformResourceName: snakify(resourceName),
-		ResourceBlock:         getBlock("root", schema.Value, false),
-	}
-
-	log.Printf("Generating Go code for terraform resource from OpenAPI ref %s", *ref)
-
-	f, err := os.OpenFile(*outputFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	var config Config
+	decoder := json.NewDecoder(f)
+	err = decoder.Decode(&config)
 	if err != nil {
-		log.Fatalf("error opening file (%s): %s", *outputFile, err)
+		log.Fatalf("could not decode JSON configuration file: %v", err)
 	}
 
-	src := resource.Bytes()
-	if *gofmt {
-		src, err = format.Source(resource.Bytes())
+	resources := []string{}
+	for _, r := range config.ResourcesConfig {
+		doc, err := openapi3.NewLoader().LoadFromFile("../../tools/codegen/data/" + r.OpenAPIv3Config.Source)
 		if err != nil {
-			log.Fatalf("error formatting generated Go code: %s", err)
+			log.Fatalf("error loading OpenAPI specification: %v", err)
 		}
+
+		schema, ok := doc.Components.Schemas[r.OpenAPIv3Config.Ref]
+		if !ok {
+			log.Fatalf("no schema for %q exists in OpenAPI document %q", r.OpenAPIv3Config.Ref, r.OpenAPIv3Config.Source)
+		}
+
+		parts := strings.Split(r.OpenAPIv3Config.Ref, ".")
+		kind := parts[len(parts)-1]
+		resource := TerraformResource{
+			Package:            r.Package,
+			Kind:               kind,
+			APIVersion:         r.APIVersion,
+			ResourceName:       r.ResourceName,
+			Root:               getSchema("root", schema.Value, false),
+			GeneratedTimestamp: time.Now(),
+		}
+
+		log.Printf("Generating Go code for terraform resource %q from OpenAPI ref %s",
+			resource.ResourceName, r.OpenAPIv3Config.Ref)
+
+		f, err := os.OpenFile(r.Filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		if err != nil {
+			log.Fatalf("error opening file (%s): %s", r.Filename, err)
+		}
+
+		src := resource.Bytes()
+		if *gofmt {
+			src, err = format.Source(resource.Bytes())
+			if err != nil {
+				log.Fatalf("error formatting generated Go code: %s", err)
+			}
+		}
+
+		if _, err := f.Write(src); err != nil {
+			log.Fatalf("error writing to file %q: %s", r.Filename, err)
+		}
+
+		f.Close()
+
+		resources = append(resources, kind)
 	}
 
+	log.Printf("Generating list of resources in resources_list.go")
+	resourceListFilename := "resources_list.go"
+	resourcesList := ResourcesList{
+		Package:   "provider",
+		Resources: resources,
+	}
+	f, err = os.OpenFile(resourceListFilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		log.Fatalf("error opening file (%s): %s", resourceListFilename, err)
+	}
+	src, err := format.Source(resourcesList.Bytes())
+	if err != nil {
+		log.Fatalf("error formatting generated Go code: %s", err)
+	}
 	if _, err := f.Write(src); err != nil {
-		log.Fatalf("error writing to file %q: %s", *outputFile, err)
+		log.Fatalf("error writing to file %q: %s", resourceListFilename, err)
 	}
 
 	f.Close()
 }
+
+//go:embed templates/attribute.go.tpl
+var attributeTemplate string
+
+//go:embed templates/schema.go.tpl
+var blockTemplate string
+
+//go:embed templates/resource.go.tpl
+var resourceTemplate string
+
+//go:embed templates/resources_list.go.tpl
+var resourcesListTemplate string
 
 type TerraformAttribute struct {
 	Name          string
@@ -212,15 +290,6 @@ type TerraformAttribute struct {
 	Required      bool
 	Description   string
 }
-
-//go:embed templates/attribute.go.tpl
-var attributeTemplate string
-
-//go:embed templates/block.go.tpl
-var blockTemplate string
-
-//go:embed templates/resource.go.tpl
-var resourceTemplate string
 
 func (a TerraformAttribute) String() string {
 	tpl, err := template.New("").Parse(attributeTemplate)
@@ -235,14 +304,14 @@ func (a TerraformAttribute) String() string {
 	return buf.String()
 }
 
-type TerraformBlock struct {
+type TerraformSchema struct {
 	Name        string
 	Description string
 	Attributes  []TerraformAttribute
-	Blocks      []TerraformBlock
+	Blocks      []TerraformSchema
 }
 
-func (b TerraformBlock) String() string {
+func (b TerraformSchema) String() string {
 	tpl, err := template.New("").Parse(blockTemplate)
 	if err != nil {
 		panic(fmt.Sprintf("could not parse template: %v", err))
@@ -256,16 +325,22 @@ func (b TerraformBlock) String() string {
 }
 
 type TerraformResource struct {
-	// The Go package name the resource lives in
+	// GeneratedTimestamp
+	GeneratedTimestamp time.Time
+
+	// Package is the Go package name the resource lives in
 	Package string
 
-	// The resource name in CamelCase format
+	// Kind is the Kubernetes resource kind
+	Kind string
+
+	// APIVersion is the Kubernetes resource apiVersion
+	APIVersion string
+
+	// ResourceName is the Terraform resource name in snake_case
 	ResourceName string
 
-	// The Terraform resource name in snake_case
-	TerraformResourceName string
-
-	ResourceBlock TerraformBlock
+	Root TerraformSchema
 }
 
 func (r TerraformResource) String() string {
@@ -282,5 +357,30 @@ func (r TerraformResource) String() string {
 }
 
 func (r TerraformResource) Bytes() []byte {
+	return []byte(r.String())
+}
+
+type ResourcesList struct {
+	// The Go package name the resource lives in
+	Package string
+
+	// The list of resource names
+	Resources []string
+}
+
+func (r ResourcesList) String() string {
+	tpl, err := template.New("").Parse(resourcesListTemplate)
+	if err != nil {
+		panic(fmt.Sprintf("could not parse template: %v", err))
+	}
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, r)
+	if err != nil {
+		panic(fmt.Sprintf("error executing template: %v", err))
+	}
+	return buf.String()
+}
+
+func (r ResourcesList) Bytes() []byte {
 	return []byte(r.String())
 }

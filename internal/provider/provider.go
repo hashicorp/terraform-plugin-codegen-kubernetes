@@ -22,16 +22,22 @@ type KubernetesProvider struct {
 
 // KubernetesProviderModel describes the provider data model.
 type KubernetesProviderModel struct {
+	ConfigPath string `tfsdk:"config_path"`
 }
 
 func (p *KubernetesProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "kubernetes"
+	resp.TypeName = "kubernetesx"
 	resp.Version = p.version
 }
 
 func (p *KubernetesProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Attributes: map[string]schema.Attribute{},
+		Attributes: map[string]schema.Attribute{
+			"config_path": schema.StringAttribute{
+				MarkdownDescription: "Path to kubeconfig",
+				Required:            true,
+			},
+		},
 	}
 }
 
@@ -43,12 +49,13 @@ func (p *KubernetesProvider) Configure(ctx context.Context, req provider.Configu
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	clientGetter := NewKubernetesClientGetter(data.ConfigPath)
+	resp.ResourceData = &clientGetter
 }
 
 func (p *KubernetesProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{
-		NewConfigMap,
-	}
+	return resources
 }
 
 func (p *KubernetesProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
