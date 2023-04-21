@@ -52,7 +52,16 @@ func skipField(f string) bool {
 	return false
 }
 
-func getSchema(name string, schema *openapi3.Schema, requiredBlock bool) TerraformSchema {
+func stringInSlice(s string, ss []string) bool {
+	for _, sss := range ss {
+		if sss == s {
+			return true
+		}
+	}
+	return false
+}
+
+func getSchema(name string, schema *openapi3.Schema, requiredBlock bool, ignoredFields, computedFields []string) TerraformSchema {
 	attributes := []TerraformAttribute{}
 	blocks := []TerraformSchema{}
 
@@ -74,7 +83,7 @@ func getSchema(name string, schema *openapi3.Schema, requiredBlock bool) Terrafo
 
 	for name, prop := range properties {
 		// FIXME make this configurable
-		if skipField(name) {
+		if stringInSlice(name, ignoredFields) {
 			continue
 		}
 
@@ -87,7 +96,7 @@ func getSchema(name string, schema *openapi3.Schema, requiredBlock bool) Terrafo
 		attributeType, elementType, err := getAttributeType(prop.Value)
 		if err != nil {
 			// this means the attribute needs to be a block
-			blocks = append(blocks, getSchema(snakify(name), prop.Value, required))
+			blocks = append(blocks, getSchema(snakify(name), prop.Value, required, ignoredFields, computedFields))
 			continue
 		}
 		attributes = append(attributes, TerraformAttribute{
@@ -96,6 +105,7 @@ func getSchema(name string, schema *openapi3.Schema, requiredBlock bool) Terrafo
 			AttributeType: attributeType,
 			ElementType:   elementType,
 			Required:      required,
+			Computed:      stringInSlice(name, computedFields),
 		})
 	}
 
@@ -181,6 +191,8 @@ type ResourceConfig struct {
 	APIVersion      string          `json:"apiVersion"`
 	Filename        string          `json:"filename"`
 	OpenAPIv3Config OpenAPIv3Config `json:"openapi_v3"`
+	IgnoreFields    []string        `json:"ignore_fields"`
+	ComputedFields  []string        `json:"computed_fields"`
 }
 
 type Config struct {
@@ -221,7 +233,7 @@ func main() {
 			Kind:               kind,
 			APIVersion:         r.APIVersion,
 			ResourceName:       r.ResourceName,
-			Root:               getSchema("root", schema.Value, false),
+			Root:               getSchema("root", schema.Value, false, r.IgnoreFields, r.ComputedFields),
 			GeneratedTimestamp: time.Now(),
 		}
 
@@ -289,6 +301,7 @@ type TerraformAttribute struct {
 	ElementType   string
 	Required      bool
 	Description   string
+	Computed      bool
 }
 
 func (a TerraformAttribute) String() string {

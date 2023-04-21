@@ -7,3 +7,6 @@ Required: true,
 {{- else }}
 Optional: true,
 {{- end }}
+{{- if .Computed }}
+Computed: true,
+{{- end }}
