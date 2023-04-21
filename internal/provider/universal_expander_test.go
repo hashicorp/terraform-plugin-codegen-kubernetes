@@ -3,6 +3,7 @@ package provider
 import (
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -13,19 +14,72 @@ func TestUniversalExpand(t *testing.T) {
 		"metadata": map[string]interface{}{
 			"name":      "test",
 			"namespace": "kube-system",
+			"labels": map[string]interface{}{
+				"test": "test",
+			},
+			"annotations": map[string]interface{}{
+				"test": "test",
+			},
 		},
 		"immutable": false,
-		"binaryData": map[string]interface{}{
-			"OBJECT": "aGVsbG8gd29ybGQ=",
-		},
 		"data": map[string]interface{}{
 			"PGUSER": "hello",
 		},
+		"binaryData": map[string]interface{}{
+			"OBJECT": "aGVsbG8gd29ybGQ=",
+		},
 	}
 
-	out := ExpandValue(in)
+	stringMapType := tftypes.Map{ElementType: tftypes.String}
+	metadataType := tftypes.List{
+		ElementType: tftypes.Object{
+			AttributeTypes: map[string]tftypes.Type{
+				"name":        tftypes.String,
+				"namespace":   tftypes.String,
+				"labels":      stringMapType,
+				"annotations": stringMapType,
+			},
+		},
+	}
 
-	t.Logf("Output: %#v", out)
+	actual := ExpandValue(in)
+	expected := tftypes.NewValue(
+		tftypes.Object{
+			AttributeTypes: map[string]tftypes.Type{
+				"api_version": tftypes.String,
+				"kind":        tftypes.String,
+				"metadata":    metadataType,
+				"data":        stringMapType,
+				"binary_data": stringMapType,
+				"immutable":   tftypes.Bool,
+			},
+		},
+		map[string]tftypes.Value{
+			"api_version": tftypes.NewValue(tftypes.String, "v1"),
+			"kind":        tftypes.NewValue(tftypes.String, "ConfigMap"),
+			"metadata": tftypes.NewValue(metadataType, []tftypes.Value{
+				tftypes.NewValue(metadataType.ElementType, map[string]tftypes.Value{
+					"name":      tftypes.NewValue(tftypes.String, "test"),
+					"namespace": tftypes.NewValue(tftypes.String, "kube-system"),
+					"annotations": tftypes.NewValue(stringMapType, map[string]tftypes.Value{
+						"test": tftypes.NewValue(tftypes.String, "test"),
+					}),
+					"labels": tftypes.NewValue(stringMapType, map[string]tftypes.Value{
+						"test": tftypes.NewValue(tftypes.String, "test"),
+					}),
+				}),
+			}),
+			"immutable": tftypes.NewValue(tftypes.Bool, false),
+			"data": tftypes.NewValue(stringMapType, map[string]tftypes.Value{
+				"PGUSER": tftypes.NewValue(tftypes.String, "hello"),
+			}),
+			"binary_data": tftypes.NewValue(stringMapType, map[string]tftypes.Value{
+				"OBJECT": tftypes.NewValue(tftypes.String, "aGVsbG8gd29ybGQ="),
+			}),
+		},
+	)
+
+	assert.Equal(t, expected, actual)
 }
 
 func TestSnakify(t *testing.T) {
