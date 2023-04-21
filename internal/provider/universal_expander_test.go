@@ -44,7 +44,7 @@ func TestUniversalExpand(t *testing.T) {
 	}
 
 	ignoredFields := []string{"generateName"}
-	actual := ExpandValue(in, ignoredFields)
+	actual := UniversalExpand(in, ignoredFields)
 	expected := tftypes.NewValue(
 		tftypes.Object{
 			AttributeTypes: map[string]tftypes.Type{

@@ -35,7 +35,7 @@ func UniversalCreate(ctx context.Context, clientGetter *KubernetesClientGetter, 
 		return tftypes.Value{}, err
 	}
 
-	flattenedManifest := FlattenValue(req.Plan.Raw, ignoredFields).(map[string]interface{})
+	flattenedManifest := UniversalFlatten(req.Plan.Raw, ignoredFields).(map[string]interface{})
 
 	var resourceInterface dynamic.ResourceInterface
 	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
@@ -64,7 +64,7 @@ func UniversalCreate(ctx context.Context, clientGetter *KubernetesClientGetter, 
 
 	responseManifest := res.Object
 	responseManifest["id"] = createID(responseManifest)
-	state := ExpandValue(responseManifest, ignoredFields)
+	state := UniversalExpand(responseManifest, ignoredFields)
 	return state, nil
 }
 
@@ -109,7 +109,7 @@ func UniversalRead(ctx context.Context, clientGetter *KubernetesClientGetter, ki
 
 	responseManifest := res.Object
 	responseManifest["id"] = id
-	state := ExpandValue(responseManifest, ignoredFields)
+	state := UniversalExpand(responseManifest, ignoredFields)
 	return state, nil
 }
 
@@ -133,7 +133,7 @@ func UniversalUpdate(ctx context.Context, clientGetter *KubernetesClientGetter, 
 		return tftypes.Value{}, err
 	}
 
-	flattenedManifest := FlattenValue(req.Plan.Raw, ignoredFields).(map[string]interface{})
+	flattenedManifest := UniversalFlatten(req.Plan.Raw, ignoredFields).(map[string]interface{})
 
 	var resourceInterface dynamic.ResourceInterface
 	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
@@ -162,7 +162,7 @@ func UniversalUpdate(ctx context.Context, clientGetter *KubernetesClientGetter, 
 
 	responseManifest := res.Object
 	responseManifest["id"] = createID(responseManifest)
-	state := ExpandValue(responseManifest, ignoredFields)
+	state := UniversalExpand(responseManifest, ignoredFields)
 	return state, nil
 }
 

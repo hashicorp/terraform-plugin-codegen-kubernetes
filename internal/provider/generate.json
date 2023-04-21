@@ -5,7 +5,8 @@
       "resource_name": "config_map_v1",
       "kind": "ConfigMap",
       "apiVersion": "v1",
-      "filename": "config_map_v1.go",
+      "output_filename": "config_map_v1.go",
+      "overrides_filename": "config_map_v1_overrides.go",
       "openapi_v3": {
         "source": "k8s-1.24.3-core-v1.json",
         "ref": "io.k8s.api.core.v1.ConfigMap"

@@ -6,12 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-// FlattenValue takes a tftypes.Value and converts it to an unstructured Kubernetes manifest
-func FlattenValue(in tftypes.Value, ignoredFields []string) interface{} {
-	return flattenValue(in, ignoredFields, false)
+// UniversalFlatten takes a tftypes.Value and converts it to an unstructured Kubernetes manifest
+func UniversalFlatten(in tftypes.Value, ignoredFields []string) interface{} {
+	return flatten(in, ignoredFields)
 }
 
-func flattenValue(in tftypes.Value, ignoredFields []string, unwrap bool) interface{} {
+func flatten(in tftypes.Value, ignoredFields []string) interface{} {
 	switch {
 	case in.Type().Is(tftypes.String):
 		var s string
@@ -30,11 +30,8 @@ func flattenValue(in tftypes.Value, ignoredFields []string, unwrap bool) interfa
 		in.As(&l)
 		outl := []interface{}{}
 		for _, v := range l {
-			fv := flattenValue(v, ignoredFields, false)
+			fv := flatten(v, ignoredFields)
 			outl = append(outl, fv)
-		}
-		if unwrap {
-			return outl[0]
 		}
 		if len(outl) == 0 {
 			return nil
@@ -49,19 +46,21 @@ func flattenValue(in tftypes.Value, ignoredFields []string, unwrap bool) interfa
 			if stringInSlice(kk, ignoredFields) {
 				continue
 			}
-			unwrap := k == "metadata" // unwrap metadata from list
-			if vv := flattenValue(v, ignoredFields, unwrap); vv != nil {
-				outm[kk] = vv
+			if vv := flatten(v, ignoredFields); vv != nil {
+				if k == "metadata" { // unwrap metadata from list
+					outm[kk] = vv.([]interface{})[0]
+				} else {
+					outm[kk] = vv
+				}
 			}
 		}
 		if len(outm) == 0 {
 			return nil
 		}
 		return outm
-	default:
-		panic("unexpected type")
 	}
 
+	// FIXME return an error here
 	return nil
 }
 

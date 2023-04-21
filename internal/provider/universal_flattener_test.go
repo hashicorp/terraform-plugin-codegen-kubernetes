@@ -55,7 +55,7 @@ func TestUniversalFlatten(t *testing.T) {
 			"PGHOST": "localhost",
 		},
 	}
-	actual := FlattenValue(in, ignoredFields)
+	actual := UniversalFlatten(in, ignoredFields)
 	assert.EqualValues(t, expected, actual)
 }
 

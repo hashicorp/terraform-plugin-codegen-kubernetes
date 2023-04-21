@@ -49,7 +49,7 @@ func (r *{{ .Kind }}) Metadata(ctx context.Context, req resource.MetadataRequest
 }
 
 func (r *{{ .Kind }}) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	s := schema.Schema{
 		MarkdownDescription: `{{ .Root.Description }}`,
 		Attributes:   map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -73,6 +73,8 @@ func (r *{{ .Kind }}) Schema(ctx context.Context, req resource.SchemaRequest, re
 			{{- end }}
 		},
 	}
+
+	resp.Schema = r.overrideSchema(s)
 }
 
 func (r *{{ .Kind }}) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -95,37 +97,42 @@ func (r *{{ .Kind }}) Configure(ctx context.Context, req resource.ConfigureReque
 
 
 func (r *{{ .Kind }}) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	r.beforeCreate(ctx, req, resp)
 	state, err := UniversalCreate(ctx, r.clientGetter, r.Kind, r.APIVersion, r.IgnoredFields, req)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating resource", err.Error())
 	}
-
 	resp.State.Raw = state
+	r.afterCreate(ctx, req, resp)
 }
 
 func (r *{{ .Kind }}) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	r.beforeRead(ctx, req, resp)
 	state, err := UniversalRead(ctx, r.clientGetter, r.Kind, r.APIVersion, r.IgnoredFields, req)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
 	}
-
 	resp.State.Raw = state
+	r.afterRead(ctx, req, resp)
 }
 
 func (r *{{ .Kind }}) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	r.beforeUpdate(ctx, req, resp)
 	state, err := UniversalUpdate(ctx, r.clientGetter, r.Kind, r.APIVersion, r.IgnoredFields, req)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
 	}
-
 	resp.State.Raw = state
+	r.afterUpdate(ctx, req, resp)
 }
 
 func (r *{{ .Kind }}) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	r.beforeDelete(ctx, req, resp)
 	err := UniversalDelete(ctx, r.clientGetter, r.Kind, r.APIVersion, req)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
 	}
+	r.afterDelete(ctx, req, resp)
 }
 
 func (r *{{ .Kind }}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

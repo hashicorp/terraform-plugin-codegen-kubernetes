@@ -18,15 +18,12 @@ import (
 	_ "embed"
 )
 
-// TODO add const for fields that should always be stripped, e.g. as fieldManager
 // TODO replace camel case in descriptions with terraform snake case
 // TODO singularize blocks that are arrays, e.g containers -> container
 // TODO use enum field to add validators e.g ServiceSpec.type field
-// TODO autogenerate schema for GetResources and GetDataSources
+// TODO support data sources
 
 var (
-	gofmt = flag.Bool("fmt", true, "run the generated files through go fmt")
-
 	cfgfile = flag.String("cfg", "gen.json", "path to the JSON configuration file for the code generator")
 )
 
@@ -82,7 +79,6 @@ func getSchema(name string, schema *openapi3.Schema, requiredBlock bool, ignored
 	}
 
 	for name, prop := range properties {
-		// FIXME make this configurable
 		if stringInSlice(name, ignoredFields) {
 			continue
 		}
@@ -185,14 +181,15 @@ type OpenAPIv3Config struct {
 }
 
 type ResourceConfig struct {
-	Package         string          `json:"package"`
-	ResourceName    string          `json:"resource_name"`
-	Kind            string          `json:"kind"`
-	APIVersion      string          `json:"apiVersion"`
-	Filename        string          `json:"filename"`
-	OpenAPIv3Config OpenAPIv3Config `json:"openapi_v3"`
-	IgnoredFields   []string        `json:"ignored_fields"`
-	ComputedFields  []string        `json:"computed_fields"`
+	Package           string          `json:"package"`
+	ResourceName      string          `json:"resource_name"`
+	Kind              string          `json:"kind"`
+	APIVersion        string          `json:"apiVersion"`
+	OutputFilename    string          `json:"output_filename"`
+	OverridesFilename string          `json:"overrides_filename"`
+	OpenAPIv3Config   OpenAPIv3Config `json:"openapi_v3"`
+	IgnoredFields     []string        `json:"ignored_fields"`
+	ComputedFields    []string        `json:"computed_fields"`
 }
 
 type Config struct {
@@ -238,27 +235,48 @@ func main() {
 			GeneratedTimestamp: time.Now(),
 		}
 
-		log.Printf("Generating Go code for terraform resource %q from OpenAPI ref %s",
-			resource.ResourceName, r.OpenAPIv3Config.Ref)
+		log.Printf("Generating Go code for terraform resource %q from OpenAPI ref %s into %q",
+			resource.ResourceName, r.OpenAPIv3Config.Ref, r.OutputFilename)
 
-		f, err := os.OpenFile(r.Filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+		f, err := os.OpenFile(r.OutputFilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 		if err != nil {
-			log.Fatalf("error opening file (%s): %s", r.Filename, err)
+			log.Fatalf("error opening file (%s): %s", r.OutputFilename, err)
+		}
+		src, err := format.Source(resource.Bytes())
+		if err != nil {
+			log.Fatalf("error formatting generated Go code: %s", err)
+		}
+		if _, err := f.Write(src); err != nil {
+			log.Fatalf("error writing to file %q: %s", r.OutputFilename, err)
+		}
+		f.Close()
+
+		overrides := Overrides{
+			Package:            r.Package,
+			Kind:               kind,
+			GeneratedTimestamp: time.Now(),
 		}
 
-		src := resource.Bytes()
-		if *gofmt {
-			src, err = format.Source(resource.Bytes())
+		if _, err := os.Stat(r.OverridesFilename); err == nil {
+			log.Printf("Override stubs for resource %q  have already been generated, skipping.",
+				resource.ResourceName)
+		} else {
+			log.Printf("Generating override stubs for resource %q into %q",
+				resource.ResourceName, r.OverridesFilename)
+
+			f, err = os.OpenFile(r.OverridesFilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+			if err != nil {
+				log.Fatalf("error opening file (%s): %s", r.OutputFilename, err)
+			}
+			src, err = format.Source(overrides.Bytes())
 			if err != nil {
 				log.Fatalf("error formatting generated Go code: %s", err)
 			}
+			if _, err := f.Write(src); err != nil {
+				log.Fatalf("error writing to file %q: %s", r.OverridesFilename, err)
+			}
+			f.Close()
 		}
-
-		if _, err := f.Write(src); err != nil {
-			log.Fatalf("error writing to file %q: %s", r.Filename, err)
-		}
-
-		f.Close()
 
 		resources = append(resources, kind)
 	}
@@ -295,6 +313,9 @@ var resourceTemplate string
 
 //go:embed templates/resources_list.go.tpl
 var resourcesListTemplate string
+
+//go:embed templates/overrides.go.tpl
+var overridesTemplate string
 
 type TerraformAttribute struct {
 	Name          string
@@ -401,5 +422,33 @@ func (r ResourcesList) String() string {
 }
 
 func (r ResourcesList) Bytes() []byte {
+	return []byte(r.String())
+}
+
+type Overrides struct {
+	// GeneratedTimestamp
+	GeneratedTimestamp time.Time
+
+	// The Go package name the resource lives in
+	Package string
+
+	// The resource kind
+	Kind string
+}
+
+func (r Overrides) String() string {
+	tpl, err := template.New("").Parse(overridesTemplate)
+	if err != nil {
+		panic(fmt.Sprintf("could not parse template: %v", err))
+	}
+	var buf bytes.Buffer
+	err = tpl.Execute(&buf, r)
+	if err != nil {
+		panic(fmt.Sprintf("error executing template: %v", err))
+	}
+	return buf.String()
+}
+
+func (r Overrides) Bytes() []byte {
 	return []byte(r.String())
 }
