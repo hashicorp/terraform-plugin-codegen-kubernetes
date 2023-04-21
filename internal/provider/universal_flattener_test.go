@@ -8,12 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFlattenValue(t *testing.T) {
+func TestUniversalFlatten(t *testing.T) {
 	metadataType := tftypes.List{
 		ElementType: tftypes.Object{
 			AttributeTypes: map[string]tftypes.Type{
-				"name":      tftypes.String,
-				"namespace": tftypes.String,
+				"name":          tftypes.String,
+				"namespace":     tftypes.String,
+				"generate_name": tftypes.String,
 			},
 		},
 	}
@@ -30,8 +31,9 @@ func TestFlattenValue(t *testing.T) {
 		"kind":        tftypes.NewValue(tftypes.String, "ConfigMap"),
 		"metadata": tftypes.NewValue(metadataType, []tftypes.Value{
 			tftypes.NewValue(metadataType.ElementType, map[string]tftypes.Value{
-				"name":      tftypes.NewValue(tftypes.String, "example"),
-				"namespace": tftypes.NewValue(tftypes.String, "example"),
+				"name":          tftypes.NewValue(tftypes.String, "example"),
+				"namespace":     tftypes.NewValue(tftypes.String, "example"),
+				"generate_name": tftypes.NewValue(tftypes.String, "ignore_me"),
 			}),
 		}),
 		"data": tftypes.NewValue(dataType, map[string]tftypes.Value{
@@ -40,6 +42,7 @@ func TestFlattenValue(t *testing.T) {
 		}),
 	})
 
+	ignoredFields := []string{"generateName"}
 	expected := map[string]interface{}{
 		"apiVersion": "v1",
 		"kind":       "ConfigMap",
@@ -52,7 +55,7 @@ func TestFlattenValue(t *testing.T) {
 			"PGHOST": "localhost",
 		},
 	}
-	actual := FlattenValue(in)
+	actual := FlattenValue(in, ignoredFields)
 	assert.EqualValues(t, expected, actual)
 }
 

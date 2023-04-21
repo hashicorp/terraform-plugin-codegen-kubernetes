@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
-func ExpandValue(in interface{}) tftypes.Value {
+func ExpandValue(in interface{}, ignoredFields []string) tftypes.Value {
 	switch v := in.(type) {
 	case string:
 		return tftypes.NewValue(tftypes.String, v)
@@ -18,12 +18,10 @@ func ExpandValue(in interface{}) tftypes.Value {
 		outm := map[string]tftypes.Value{}
 		attrtypes := map[string]tftypes.Type{}
 		for k, vv := range v {
-			// FIXME make configurable
-			if k == "managedFields" {
+			if stringInSlice(k, ignoredFields) {
 				continue
 			}
-
-			vvv := ExpandValue(vv)
+			vvv := ExpandValue(vv, ignoredFields)
 			if k == "metadata" { // FIXME we need to make this configurable
 				tt := tftypes.List{ElementType: vvv.Type()}
 				attrtypes[k] = tt
@@ -53,7 +51,7 @@ func ExpandValue(in interface{}) tftypes.Value {
 	case []interface{}:
 		outl := []tftypes.Value{}
 		for _, vv := range v {
-			outl = append(outl, ExpandValue(vv))
+			outl = append(outl, ExpandValue(vv, ignoredFields))
 		}
 		// FIXME need to figure out if this is list or tuple
 		return tftypes.NewValue(tftypes.List{ElementType: outl[0].Type()}, outl)

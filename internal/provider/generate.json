@@ -10,7 +10,7 @@
         "source": "k8s-1.24.3-core-v1.json",
         "ref": "io.k8s.api.core.v1.ConfigMap"
       },
-      "ignore_fields": [
+      "ignored_fields": [
         "finalizers",
         "managedFields",
         "ownerReferences",

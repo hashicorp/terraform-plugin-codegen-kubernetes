@@ -27,6 +27,8 @@ type {{ .Kind }} struct{
 	Kind string
 	APIVersion string
 
+	IgnoredFields []string
+
 	clientGetter *KubernetesClientGetter
 }
 
@@ -34,6 +36,11 @@ func New{{ .Kind }}() resource.Resource {
 	return &{{ .Kind }}{
 		Kind: "{{ .Kind }}",
 		APIVersion: "{{ .APIVersion }}",
+		IgnoredFields: []string{
+			{{- range $v := .IgnoredFields }}
+			"{{ $v }}",
+			{{- end }}
+		},
 	}
 }
 
@@ -88,7 +95,7 @@ func (r *{{ .Kind }}) Configure(ctx context.Context, req resource.ConfigureReque
 
 
 func (r *{{ .Kind }}) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	state, err := UniversalCreate(ctx, r.clientGetter, r.Kind, r.APIVersion, req)
+	state, err := UniversalCreate(ctx, r.clientGetter, r.Kind, r.APIVersion, r.IgnoredFields, req)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating resource", err.Error())
 	}
@@ -97,7 +104,7 @@ func (r *{{ .Kind }}) Create(ctx context.Context, req resource.CreateRequest, re
 }
 
 func (r *{{ .Kind }}) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	state, err := UniversalRead(ctx, r.clientGetter, r.Kind, r.APIVersion, req)
+	state, err := UniversalRead(ctx, r.clientGetter, r.Kind, r.APIVersion, r.IgnoredFields, req)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
 	}
@@ -106,7 +113,7 @@ func (r *{{ .Kind }}) Read(ctx context.Context, req resource.ReadRequest, resp *
 }
 
 func (r *{{ .Kind }}) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	state, err := UniversalUpdate(ctx, r.clientGetter, r.Kind, r.APIVersion, req)
+	state, err := UniversalUpdate(ctx, r.clientGetter, r.Kind, r.APIVersion, r.IgnoredFields, req)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
 	}

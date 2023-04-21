@@ -7,11 +7,11 @@ import (
 )
 
 // FlattenValue takes a tftypes.Value and converts it to an unstructured Kubernetes manifest
-func FlattenValue(in tftypes.Value) interface{} {
-	return flattenValue(in, false)
+func FlattenValue(in tftypes.Value, ignoredFields []string) interface{} {
+	return flattenValue(in, ignoredFields, false)
 }
 
-func flattenValue(in tftypes.Value, unwrap bool) interface{} {
+func flattenValue(in tftypes.Value, ignoredFields []string, unwrap bool) interface{} {
 	switch {
 	case in.Type().Is(tftypes.String):
 		var s string
@@ -24,15 +24,13 @@ func flattenValue(in tftypes.Value, unwrap bool) interface{} {
 		var b bool
 		in.As(&b)
 		return b
-	case in.Type().Is(tftypes.Number):
-		// TODO
-
+	// TODO handle numbers
 	case in.Type().Is(tftypes.List{}) || in.Type().Is(tftypes.Tuple{}):
 		var l []tftypes.Value
 		in.As(&l)
 		outl := []interface{}{}
 		for _, v := range l {
-			fv := flattenValue(v, false)
+			fv := flattenValue(v, ignoredFields, false)
 			outl = append(outl, fv)
 		}
 		if unwrap {
@@ -47,9 +45,13 @@ func flattenValue(in tftypes.Value, unwrap bool) interface{} {
 		in.As(&m)
 		outm := map[string]interface{}{}
 		for k, v := range m {
+			kk := Camelize(k)
+			if stringInSlice(kk, ignoredFields) {
+				continue
+			}
 			unwrap := k == "metadata" // unwrap metadata from list
-			if vv := flattenValue(v, unwrap); vv != nil {
-				outm[Camelize(k)] = vv
+			if vv := flattenValue(v, ignoredFields, unwrap); vv != nil {
+				outm[kk] = vv
 			}
 		}
 		if len(outm) == 0 {
@@ -82,4 +84,13 @@ func Camelize(in string) string {
 		}
 	}
 	return out
+}
+
+func stringInSlice(s string, ss []string) bool {
+	for _, sss := range ss {
+		if sss == s {
+			return true
+		}
+	}
+	return false
 }

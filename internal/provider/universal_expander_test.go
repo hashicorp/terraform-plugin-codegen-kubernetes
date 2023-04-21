@@ -12,8 +12,9 @@ func TestUniversalExpand(t *testing.T) {
 		"apiVersion": "v1",
 		"kind":       "ConfigMap",
 		"metadata": map[string]interface{}{
-			"name":      "test",
-			"namespace": "kube-system",
+			"name":         "test",
+			"namespace":    "kube-system",
+			"generateName": "ignore-this",
 			"labels": map[string]interface{}{
 				"test": "test",
 			},
@@ -42,7 +43,8 @@ func TestUniversalExpand(t *testing.T) {
 		},
 	}
 
-	actual := ExpandValue(in)
+	ignoredFields := []string{"generateName"}
+	actual := ExpandValue(in, ignoredFields)
 	expected := tftypes.NewValue(
 		tftypes.Object{
 			AttributeTypes: map[string]tftypes.Type{

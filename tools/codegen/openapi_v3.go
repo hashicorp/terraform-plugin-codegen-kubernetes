@@ -191,7 +191,7 @@ type ResourceConfig struct {
 	APIVersion      string          `json:"apiVersion"`
 	Filename        string          `json:"filename"`
 	OpenAPIv3Config OpenAPIv3Config `json:"openapi_v3"`
-	IgnoreFields    []string        `json:"ignore_fields"`
+	IgnoredFields   []string        `json:"ignored_fields"`
 	ComputedFields  []string        `json:"computed_fields"`
 }
 
@@ -233,7 +233,8 @@ func main() {
 			Kind:               kind,
 			APIVersion:         r.APIVersion,
 			ResourceName:       r.ResourceName,
-			Root:               getSchema("root", schema.Value, false, r.IgnoreFields, r.ComputedFields),
+			IgnoredFields:      r.IgnoredFields,
+			Root:               getSchema("root", schema.Value, false, r.IgnoredFields, r.ComputedFields),
 			GeneratedTimestamp: time.Now(),
 		}
 
@@ -353,6 +354,8 @@ type TerraformResource struct {
 	// ResourceName is the Terraform resource name in snake_case
 	ResourceName string
 
+	IgnoredFields []string
+
 	Root TerraformSchema
 }
 
@@ -374,6 +377,9 @@ func (r TerraformResource) Bytes() []byte {
 }
 
 type ResourcesList struct {
+	// GeneratedTimestamp
+	GeneratedTimestamp time.Time
+
 	// The Go package name the resource lives in
 	Package string
 

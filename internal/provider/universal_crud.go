@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/restmapper"
 )
 
-func UniversalCreate(ctx context.Context, clientGetter *KubernetesClientGetter, kind, apiVersion string, req resource.CreateRequest) (tftypes.Value, error) {
+func UniversalCreate(ctx context.Context, clientGetter *KubernetesClientGetter, kind, apiVersion string, ignoredFields []string, req resource.CreateRequest) (tftypes.Value, error) {
 	client, err := clientGetter.DynamicClient()
 	if err != nil {
 		return tftypes.Value{}, err
@@ -35,7 +35,7 @@ func UniversalCreate(ctx context.Context, clientGetter *KubernetesClientGetter, 
 		return tftypes.Value{}, err
 	}
 
-	flattenedManifest := FlattenValue(req.Plan.Raw).(map[string]interface{})
+	flattenedManifest := FlattenValue(req.Plan.Raw, ignoredFields).(map[string]interface{})
 
 	var resourceInterface dynamic.ResourceInterface
 	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
@@ -64,11 +64,11 @@ func UniversalCreate(ctx context.Context, clientGetter *KubernetesClientGetter, 
 
 	responseManifest := res.Object
 	responseManifest["id"] = createID(responseManifest)
-	state := ExpandValue(responseManifest)
+	state := ExpandValue(responseManifest, ignoredFields)
 	return state, nil
 }
 
-func UniversalRead(ctx context.Context, clientGetter *KubernetesClientGetter, kind, apiVersion string, req resource.ReadRequest) (tftypes.Value, error) {
+func UniversalRead(ctx context.Context, clientGetter *KubernetesClientGetter, kind, apiVersion string, ignoredFields []string, req resource.ReadRequest) (tftypes.Value, error) {
 	client, err := clientGetter.DynamicClient()
 	if err != nil {
 		return tftypes.Value{}, err
@@ -109,11 +109,11 @@ func UniversalRead(ctx context.Context, clientGetter *KubernetesClientGetter, ki
 
 	responseManifest := res.Object
 	responseManifest["id"] = id
-	state := ExpandValue(responseManifest)
+	state := ExpandValue(responseManifest, ignoredFields)
 	return state, nil
 }
 
-func UniversalUpdate(ctx context.Context, clientGetter *KubernetesClientGetter, kind, apiVersion string, req resource.UpdateRequest) (tftypes.Value, error) {
+func UniversalUpdate(ctx context.Context, clientGetter *KubernetesClientGetter, kind, apiVersion string, ignoredFields []string, req resource.UpdateRequest) (tftypes.Value, error) {
 	client, err := clientGetter.DynamicClient()
 	if err != nil {
 		return tftypes.Value{}, err
@@ -133,7 +133,7 @@ func UniversalUpdate(ctx context.Context, clientGetter *KubernetesClientGetter, 
 		return tftypes.Value{}, err
 	}
 
-	flattenedManifest := FlattenValue(req.Plan.Raw).(map[string]interface{})
+	flattenedManifest := FlattenValue(req.Plan.Raw, ignoredFields).(map[string]interface{})
 
 	var resourceInterface dynamic.ResourceInterface
 	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
@@ -162,7 +162,7 @@ func UniversalUpdate(ctx context.Context, clientGetter *KubernetesClientGetter, 
 
 	responseManifest := res.Object
 	responseManifest["id"] = createID(responseManifest)
-	state := ExpandValue(responseManifest)
+	state := ExpandValue(responseManifest, ignoredFields)
 	return state, nil
 }
 
