@@ -13,8 +13,8 @@ description: |-
 ## Example Usage
 
 ```terraform
-provider "kubernetesx" {
-  config_path = "~/.kube/config"
+provider "scaffolding" {
+  # example configuration here
 }
 ```
 
