@@ -284,8 +284,9 @@ func main() {
 	log.Printf("Generating list of resources in resources_list.go")
 	resourceListFilename := "resources_list.go"
 	resourcesList := ResourcesList{
-		Package:   "provider",
-		Resources: resources,
+		Package:            "provider",
+		Resources:          resources,
+		GeneratedTimestamp: time.Now(),
 	}
 	f, err = os.OpenFile(resourceListFilename, os.O_APPEND|os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
