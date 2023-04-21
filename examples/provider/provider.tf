@@ -1,3 +1,3 @@
-provider "scaffolding" {
-  # example configuration here
+provider "kubernetesx" {
+  config_path = "~/.kube/config"
 }
