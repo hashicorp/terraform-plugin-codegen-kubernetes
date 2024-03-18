@@ -53,7 +53,10 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 	obj.SetUnstructuredContent(manifest)
 	obj.SetKind(kind)
 	obj.SetAPIVersion(apiVersion)
-	payload, _ := obj.MarshalJSON()
+	payload, err := obj.MarshalJSON()
+	if err != nil {
+		return err
+	}
 
 	res, err := resourceInterface.Patch(ctx, obj.GetName(), patchtypes.ApplyPatchType, payload,
 		v1.PatchOptions{
@@ -67,7 +70,10 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 
 	responseManifest := res.UnstructuredContent()
 	id := createID(responseManifest)
-	FlattenManifest(responseManifest, model)
+	err = FlattenManifest(responseManifest, model)
+	if err != nil {
+		return err
+	}
 	setID(id, &model)
 
 	return nil
