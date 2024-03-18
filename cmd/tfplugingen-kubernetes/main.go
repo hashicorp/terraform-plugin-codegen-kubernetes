@@ -55,7 +55,7 @@ func main() {
 		generatePackageList(generatedResources),
 	}
 	outputFilename := "resources_list_gen.go"
-	generator.OutputFormattedGoFile("./provider", outputFilename, resourcesList.String())
+	generator.WriteFormattedSourceFile("./provider", outputFilename, resourcesList.String())
 	slog.Info("Generated resources list source file", "filename", outputFilename)
 }
 
@@ -91,14 +91,14 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 		// generate resource
 		resourceCode := gen.GenerateResourceCode()
 		outputFilename := fmt.Sprintf("%s_gen.go", r.OutputFilenamePrefix)
-		generator.OutputFormattedGoFile(wd, outputFilename, resourceCode)
+		generator.WriteFormattedSourceFile(wd, outputFilename, resourceCode)
 		slog.Info("Generated resource source file", "filename", outputFilename)
 
 		// generate schema
 		if r.Generate.Schema {
 			schemaCode := gen.GenerateSchemaFunctionCode()
 			outputFilename = fmt.Sprintf("%s_schema_gen.go", r.OutputFilenamePrefix)
-			generator.OutputFormattedGoFile(wd, outputFilename, schemaCode)
+			generator.WriteFormattedSourceFile(wd, outputFilename, schemaCode)
 			slog.Info("Generated schema source file", "filename", outputFilename)
 		}
 
@@ -106,7 +106,7 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 		if r.Generate.CRUDStubs {
 			crudStubCode := gen.GenerateCRUDStubCode()
 			outputFilename = fmt.Sprintf("%s_crud.go", r.OutputFilenamePrefix)
-			generator.OutputFormattedGoFile(wd, outputFilename, crudStubCode)
+			generator.WriteFormattedSourceFile(wd, outputFilename, crudStubCode)
 			slog.Info("Generated CRUD stub source file", "filename", outputFilename)
 		}
 
@@ -114,7 +114,7 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 		if r.Generate.CRUDAuto {
 			crudStubCode := gen.GenerateAutoCRUDCode()
 			outputFilename = fmt.Sprintf("%s_crud_gen.go", r.OutputFilenamePrefix)
-			generator.OutputFormattedGoFile(wd, outputFilename, crudStubCode)
+			generator.WriteFormattedSourceFile(wd, outputFilename, crudStubCode)
 			slog.Info("Generated autocrud source file", "filename", outputFilename)
 		}
 
@@ -122,7 +122,7 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 		if r.Generate.Model {
 			crudStubCode := gen.GenerateModelCode()
 			outputFilename = fmt.Sprintf("%s_model_gen.go", r.OutputFilenamePrefix)
-			generator.OutputFormattedGoFile(wd, outputFilename, crudStubCode)
+			generator.WriteFormattedSourceFile(wd, outputFilename, crudStubCode)
 			slog.Info("Generated model source file", "filename", outputFilename)
 		}
 

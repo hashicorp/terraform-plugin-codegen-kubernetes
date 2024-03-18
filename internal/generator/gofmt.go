@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 )
 
-// OutputFormattedGoFile runs Go code through format before writing to a file
-func OutputFormattedGoFile(wd, path string, contents string) error {
+// WriteFormattedSourceFile runs Go code through format before writing to a file
+func WriteFormattedSourceFile(wd, path string, contents string) error {
 	src, err := format.Source([]byte(contents))
 	if err != nil {
 		return err
