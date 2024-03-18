@@ -80,7 +80,9 @@ func expand(model any) map[string]interface{} {
 		tag := f.Tag
 		manifestField := tag.Get("manifest")
 		field := val.Field(i)
-		m[manifestField] = expandValue(field)
+		if manifestField != "" {
+			m[manifestField] = expandValue(field)
+		}
 	}
 	return m
 }
