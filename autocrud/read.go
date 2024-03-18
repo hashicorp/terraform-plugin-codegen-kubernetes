@@ -52,7 +52,7 @@ func Read(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVer
 	}
 
 	responseManifest := res.UnstructuredContent()
-	responseManifest["id"] = id
 	FlattenManifest(responseManifest, model)
+	setID(id, &model)
 	return nil
 }

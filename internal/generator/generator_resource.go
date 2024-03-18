@@ -22,11 +22,10 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 	}}
 
 	modelFields := ModelFieldsGenerator{{
-		FieldName:         "ID",
-		Type:              StringModelType,
-		AttributeType:     StringAttributeType,
-		AttributeName:     "id",
-		ManifestFieldName: "id",
+		FieldName:     "ID",
+		Type:          StringModelType,
+		AttributeType: StringAttributeType,
+		AttributeName: "id",
 	}}
 
 	return ResourceGenerator{

@@ -22,6 +22,7 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	err := autocrud.Create(ctx, r.clientGetter, r.APIVersion, r.Kind, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating resource", err.Error())
+    return
 	}
 	diags := resp.State.Set(ctx, &dataModel)
 	resp.Diagnostics.Append(diags...)
@@ -36,6 +37,7 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 	err := autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
+    return
 	}
 	diags := resp.State.Set(ctx, &dataModel)
 	resp.Diagnostics.Append(diags...)
@@ -53,9 +55,10 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	err := autocrud.Update(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
+	err := autocrud.Update(ctx, r.clientGetter, r.Kind, r.APIVersion, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating resource", err.Error())
+    return
 	}
 	diags := resp.State.Set(ctx, &dataModel)
 	resp.Diagnostics.Append(diags...)
@@ -68,6 +71,7 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 	err := autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req)
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting resource", err.Error())
+    return
 	}
 }
 

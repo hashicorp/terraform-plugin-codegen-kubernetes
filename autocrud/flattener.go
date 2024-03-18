@@ -82,7 +82,7 @@ func flatten(manifest map[string]any, model any) error {
 		tag := f.Tag
 		manifestField := tag.Get("manifest")
 		field := val.Field(i)
-		if v, ok := manifest[manifestField]; ok {
+		if v, ok := manifest[manifestField]; ok && manifestField != "" {
 			field.Set(flattenValue(field, v))
 		}
 	}
