@@ -168,8 +168,8 @@ func GenerateModelFields(attrs specresource.Attributes, ignore []string, path st
 		}
 
 		generatedModelField := ModelFieldGenerator{
-			FieldName:         UpperCamelize(attr.Name),
-			ManifestFieldName: Camelize(attr.Name),
+			FieldName:         MapTerraformAttributeToModel(attr.Name),
+			ManifestFieldName: MapTerraformAttributeToKubernetes(attr.Name),
 			AttributeName:     attr.Name,
 		}
 		switch {
