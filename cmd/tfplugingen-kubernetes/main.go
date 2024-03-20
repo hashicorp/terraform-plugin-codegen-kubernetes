@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/lmittmann/tint"
@@ -13,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-codegen-kubernetes/internal/generator"
 )
 
-const generateConfigFilename = "generate.hcl"
+var configFilePattern = regexp.MustCompile(`generate(_.+)?\.hcl`)
 
 func main() {
 	// setup slog with colour to make it easier to read
@@ -27,7 +28,8 @@ func main() {
 	generateFiles := []string{}
 	filepath.Walk("./", func(path string, info fs.FileInfo, err error) error {
 		filename := filepath.Base(path)
-		if filename == generateConfigFilename {
+		if configFilePattern.MatchString(filename) {
+			slog.Info("Found generator config file", "filename", filename)
 			generateFiles = append(generateFiles, path)
 		}
 		return nil
