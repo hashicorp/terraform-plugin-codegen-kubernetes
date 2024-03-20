@@ -68,7 +68,12 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 }
 
 func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	err := autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req)
+  {{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
+  waitForDeletion := {{ .ResourceConfig.Generate.CRUDAutoOptions.WaitForDeletion }}
+  {{- else -}}
+  waitForDeletion := false
+  {{- end }}
+	err := autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req, waitForDeletion)
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting resource", err.Error())
     return
