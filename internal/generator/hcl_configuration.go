@@ -77,13 +77,19 @@ type TerraformPluginGenOpenAPIConfig struct {
 	ReadPath string `hcl:"read_path"`
 }
 
+// CRUDAutoOptions configures options for the autocrud template
+type CRUDAutoOptions struct {
+	WaitForDeletion bool `hcl:"wait_for_deletion,optional"`
+}
+
 // GenerateConfig configures the options for what we should generate
 type GenerateConfig struct {
-	Schema    bool `hcl:"schema,optional"`
-	Overrides bool `hcl:"overrides,optional"`
-	Model     bool `hcl:"model,optional"`
-	CRUDAuto  bool `hcl:"autocrud,optional"`
-	CRUDStubs bool `hcl:"crud_stubs,optional"`
+	Schema          bool             `hcl:"schema,optional"`
+	Overrides       bool             `hcl:"overrides,optional"`
+	Model           bool             `hcl:"model,optional"`
+	CRUDAuto        bool             `hcl:"autocrud,optional"`
+	CRUDAutoOptions *CRUDAutoOptions `hcl:"autocrud_options,block"`
+	CRUDStubs       bool             `hcl:"crud_stubs,optional"`
 }
 
 // ParseHCLConfig parses the .hcl configuraiton file and

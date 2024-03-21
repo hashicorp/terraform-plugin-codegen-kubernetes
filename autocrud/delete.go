@@ -2,9 +2,13 @@ package autocrud
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sschema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -12,7 +16,9 @@ import (
 	"k8s.io/client-go/restmapper"
 )
 
-func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVersion string, req resource.DeleteRequest) error {
+const waitForDeletionSleepTime = 1 * time.Second
+
+func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVersion string, req resource.DeleteRequest, wait bool) error {
 	client, err := clientGetter.DynamicClient()
 	if err != nil {
 		return err
@@ -50,5 +56,38 @@ func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiV
 	if err != nil {
 		return err
 	}
+
+	if wait {
+		return waitForDeletion(ctx, resourceInterface, name)
+	}
+	return nil
+}
+
+func waitForDeletion(ctx context.Context, r dynamic.ResourceInterface, name string) error {
+	// TODO could look at usiung resourceInterface.Watch here instead of polling
+	tflog.Debug(ctx, "Waiting for resource to be deleted")
+
+	for {
+		_, err := r.Get(ctx, name, v1.GetOptions{})
+		if err != nil {
+			if errors.IsNotFound(err) {
+				break
+			}
+			return err
+		}
+
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
+		if deadline, ok := ctx.Deadline(); ok {
+			if time.Now().After(deadline) {
+				return fmt.Errorf("timed out waiting for deletion")
+			}
+		}
+
+		time.Sleep(waitForDeletionSleepTime)
+	}
+
 	return nil
 }
