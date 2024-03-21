@@ -40,7 +40,7 @@ func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiV
 
 	var id string
 	req.State.GetAttribute(ctx, path.Root("id"), &id)
-	name, namespace := parseID(id)
+	namespace, name := parseID(id)
 
 	var resourceInterface dynamic.ResourceInterface
 	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
