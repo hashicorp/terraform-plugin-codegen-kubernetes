@@ -29,8 +29,8 @@ type ResourceConfig struct {
 	// Description is a Markdown description for the resource
 	Description string `hcl:"description"`
 
-	// IgnoreAttributes is a list of attribute paths to omit from the resource
-	IgnoreAttributes []string `hcl:"ignore_attributes,optional"`
+	// IgnoredAttributes is a list of attribute paths to omit from the resource
+	IgnoredAttributes []string `hcl:"ignored_attributes,optional"`
 
 	// FIXME not implemented yet
 	// RequiredAttributes is a list of attribute paths to mark as required in the schema

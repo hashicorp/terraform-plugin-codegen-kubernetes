@@ -10,6 +10,9 @@ Optional: true,
 {{- if .Computed }}
 Computed: true,
 {{- end }}
+{{- if .Sensitive }}
+Sensitive: true,
+{{- end }}
 {{- if .NestedAttributes }}
   {{- if eq .AttributeType "ListNestedAttribute" }}
   NestedObject: schema.NestedAttributeObject{

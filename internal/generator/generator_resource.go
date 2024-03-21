@@ -30,11 +30,11 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 
 	return ResourceGenerator{
 		ResourceConfig: cfg,
-		ModelFields:    append(modelFields, GenerateModelFields(spec.Schema.Attributes, cfg.IgnoreAttributes, "")...),
+		ModelFields:    append(modelFields, GenerateModelFields(spec.Schema.Attributes, cfg.IgnoredAttributes, "")...),
 		Schema: SchemaGenerator{
 			Name:        cfg.Name,
 			Description: cfg.Description,
-			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoreAttributes, "")...),
+			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, "")...),
 		},
 	}
 }
@@ -62,17 +62,20 @@ func (g *ResourceGenerator) GenerateAutoCRUDCode() string {
 // TODO create a walkAttributes function that abstracts the logic of traversing
 // the spec for attributes
 
-func GenerateAttributes(attrs specresource.Attributes, ignore []string, path string) AttributesGenerator {
+func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive []string, path string) AttributesGenerator {
 	generatedAttrs := AttributesGenerator{}
 	for _, attr := range attrs {
 		attributePath := path + attr.Name
 
-		if ignoreAttribute(attributePath, ignore) {
+		if stringInSlice(attributePath, ignored) {
 			continue
 		}
 
 		generatedAttr := AttributeGenerator{
-			Name: attr.Name,
+			Name:      attr.Name,
+			Required:  stringInSlice(attributePath, required),
+			Computed:  stringInSlice(attributePath, computed),
+			Sensitive: stringInSlice(attributePath, sensitive),
 		}
 		switch {
 		case attr.Bool != nil:
@@ -80,90 +83,66 @@ func GenerateAttributes(attrs specresource.Attributes, ignore []string, path str
 				generatedAttr.Description = *attr.Bool.Description
 			}
 			generatedAttr.AttributeType = BoolAttributeType
-			generatedAttr.Required = isRequired(attr.Bool.ComputedOptionalRequired)
-			generatedAttr.Computed = isComputed(attr.Bool.ComputedOptionalRequired)
-			generatedAttr.Sensitive = isSensitive(attr.Bool.Sensitive)
 		case attr.String != nil:
 			if attr.String.Description != nil {
 				generatedAttr.Description = *attr.String.Description
 			}
 			generatedAttr.AttributeType = StringAttributeType
-			generatedAttr.Required = isRequired(attr.String.ComputedOptionalRequired)
-			generatedAttr.Computed = isComputed(attr.String.ComputedOptionalRequired)
-			generatedAttr.Sensitive = isSensitive(attr.String.Sensitive)
 		case attr.Number != nil:
 			if attr.Number.Description != nil {
 				generatedAttr.Description = *attr.Number.Description
 			}
 			generatedAttr.AttributeType = NumberAttributeType
-			generatedAttr.Required = isRequired(attr.Number.ComputedOptionalRequired)
-			generatedAttr.Computed = isComputed(attr.Number.ComputedOptionalRequired)
-			generatedAttr.Sensitive = isSensitive(attr.Number.Sensitive)
 		case attr.Int64 != nil:
 			if attr.Int64.Description != nil {
 				generatedAttr.Description = *attr.Int64.Description
 			}
 			generatedAttr.AttributeType = Int64AttributeType
-			generatedAttr.Required = isRequired(attr.Int64.ComputedOptionalRequired)
-			generatedAttr.Computed = isComputed(attr.Int64.ComputedOptionalRequired)
-			generatedAttr.Sensitive = isSensitive(attr.Int64.Sensitive)
 		case attr.Map != nil:
 			if attr.Map.Description != nil {
 				generatedAttr.Description = *attr.Map.Description
 			}
 			generatedAttr.AttributeType = MapAttributeType
-			generatedAttr.Required = isRequired(attr.Map.ComputedOptionalRequired)
-			generatedAttr.Computed = isComputed(attr.Map.ComputedOptionalRequired)
-			generatedAttr.Sensitive = isSensitive(attr.Map.Sensitive)
 			generatedAttr.ElementType = getElementType(attr.Map.ElementType)
 		case attr.List != nil:
 			if attr.List.Description != nil {
 				generatedAttr.Description = *attr.List.Description
 			}
 			generatedAttr.AttributeType = ListAttributeType
-			generatedAttr.Required = isRequired(attr.List.ComputedOptionalRequired)
-			generatedAttr.Computed = isComputed(attr.List.ComputedOptionalRequired)
-			generatedAttr.Sensitive = isSensitive(attr.List.Sensitive)
 			generatedAttr.ElementType = getElementType(attr.List.ElementType)
 		case attr.SingleNested != nil:
 			if attr.SingleNested.Description != nil {
 				generatedAttr.Description = *attr.SingleNested.Description
 			}
 			generatedAttr.AttributeType = SingleNestedAttributeType
-			generatedAttr.Required = isRequired(attr.SingleNested.ComputedOptionalRequired)
-			generatedAttr.Computed = isComputed(attr.SingleNested.ComputedOptionalRequired)
-			generatedAttr.Sensitive = isSensitive(attr.SingleNested.Sensitive)
-			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, ignore, attributePath+".")
+			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, ignored, computed, required, sensitive, attributePath+".")
 		case attr.ListNested != nil:
 			if attr.ListNested.Description != nil {
 				generatedAttr.Description = *attr.ListNested.Description
 			}
 			generatedAttr.AttributeType = ListNestedAttributeType
-			generatedAttr.Required = isRequired(attr.ListNested.ComputedOptionalRequired)
-			generatedAttr.Computed = isComputed(attr.ListNested.ComputedOptionalRequired)
-			generatedAttr.Sensitive = isSensitive(attr.ListNested.Sensitive)
-			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, ignore, attributePath+"[*].")
+			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, ignored, computed, required, sensitive, attributePath+"[*].")
 		}
 		generatedAttrs = append(generatedAttrs, generatedAttr)
 	}
 	return generatedAttrs
 }
 
-func ignoreAttribute(path string, ignore []string) bool {
-	for _, v := range ignore {
-		if v == path {
+func stringInSlice(str string, slice []string) bool {
+	for _, v := range slice {
+		if v == str {
 			return true
 		}
 	}
 	return false
 }
 
-func GenerateModelFields(attrs specresource.Attributes, ignore []string, path string) ModelFieldsGenerator {
+func GenerateModelFields(attrs specresource.Attributes, ignored []string, path string) ModelFieldsGenerator {
 	generatedModelFields := ModelFieldsGenerator{}
 	for _, attr := range attrs {
 		attributePath := path + attr.Name
 
-		if ignoreAttribute(attributePath, ignore) {
+		if stringInSlice(attributePath, ignored) {
 			continue
 		}
 
@@ -193,14 +172,14 @@ func GenerateModelFields(attrs specresource.Attributes, ignore []string, path st
 			generatedModelField.ElementType = getModelElementType(attr.List.ElementType)
 		case attr.SingleNested != nil:
 			generatedModelField.AttributeType = SingleNestedAttributeType
-			generatedModelField.NestedFields = GenerateModelFields(attr.SingleNested.Attributes, ignore, attributePath+".")
+			generatedModelField.NestedFields = GenerateModelFields(attr.SingleNested.Attributes, ignored, attributePath+".")
 			if len(generatedModelField.NestedFields) == 0 {
 				slog.Warn("Ignoring nested attribute with no schema", "name", attr.Name)
 				continue
 			}
 		case attr.ListNested != nil:
 			generatedModelField.AttributeType = ListNestedAttributeType
-			generatedModelField.NestedFields = GenerateModelFields(attr.ListNested.NestedObject.Attributes, ignore, attributePath+"[*].")
+			generatedModelField.NestedFields = GenerateModelFields(attr.ListNested.NestedObject.Attributes, ignored, attributePath+"[*].")
 			if len(generatedModelField.NestedFields) == 0 {
 				slog.Warn("Ignoring nested attribute with no schema", "name", attr.Name)
 				continue
