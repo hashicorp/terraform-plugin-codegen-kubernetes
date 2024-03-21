@@ -18,7 +18,7 @@ import (
 
 const waitForDeletionSleepTime = 1 * time.Second
 
-func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVersion string, req resource.DeleteRequest, waitForDeletion bool) error {
+func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVersion string, req resource.DeleteRequest, wait bool) error {
 	client, err := clientGetter.DynamicClient()
 	if err != nil {
 		return err
@@ -57,33 +57,36 @@ func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiV
 		return err
 	}
 
-	// TODO move this into its own function called waitForDeletion
-	if waitForDeletion {
-		// TODO could look at usiung resourceInterface.Watch here instead of polling
-		tflog.Debug(ctx, "Waiting for resource to be deleted")
+	if wait {
+		return waitForDeletion(ctx, resourceInterface, name)
+	}
+	return nil
+}
 
-		for {
-			_, err := resourceInterface.Get(ctx, name, v1.GetOptions{})
-			if err != nil {
-				if errors.IsNotFound(err) {
-					return nil
-				} else {
-					return err
-				}
+func waitForDeletion(ctx context.Context, r dynamic.ResourceInterface, name string) error {
+	// TODO could look at usiung resourceInterface.Watch here instead of polling
+	tflog.Debug(ctx, "Waiting for resource to be deleted")
+
+	for {
+		_, err := r.Get(ctx, name, v1.GetOptions{})
+		if err != nil {
+			if errors.IsNotFound(err) {
+				break
 			}
-
-			if err := ctx.Err(); err != nil {
-				return err
-			}
-
-			if deadline, ok := ctx.Deadline(); ok {
-				if time.Now().After(deadline) {
-					return fmt.Errorf("timed out waiting for deletion")
-				}
-			}
-
-			time.Sleep(waitForDeletionSleepTime)
+			return err
 		}
+
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
+		if deadline, ok := ctx.Deadline(); ok {
+			if time.Now().After(deadline) {
+				return fmt.Errorf("timed out waiting for deletion")
+			}
+		}
+
+		time.Sleep(waitForDeletionSleepTime)
 	}
 
 	return nil
