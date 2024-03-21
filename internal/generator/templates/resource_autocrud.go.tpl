@@ -19,11 +19,19 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.BeforeCreate -}}
+	r.BeforeCreate(&dataModel)
+	{{ end }}
+
 	err := autocrud.Create(ctx, r.clientGetter, r.APIVersion, r.Kind, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating resource", err.Error())
     return
 	}
+
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.AfterCreate -}}
+	r.AfterCreate(&dataModel)
+	{{ end }}
 	diags := resp.State.Set(ctx, &dataModel)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

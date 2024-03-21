@@ -80,6 +80,8 @@ type TerraformPluginGenOpenAPIConfig struct {
 // CRUDAutoOptions configures options for the autocrud template
 type CRUDAutoOptions struct {
 	WaitForDeletion bool `hcl:"wait_for_deletion,optional"`
+	BeforeCreate    bool `hcl:"before_create,optional"`
+	AfterCreate     bool `hcl:"after_create,optional"`
 }
 
 // GenerateConfig configures the options for what we should generate
