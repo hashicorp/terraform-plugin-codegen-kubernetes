@@ -59,6 +59,10 @@ func (g *ResourceGenerator) GenerateAutoCRUDCode() string {
 	return renderTemplate(autocrudTemplate, g)
 }
 
+func (g *ResourceGenerator) GenerateAutoCRUDHooksCode() string {
+	return renderTemplate(autocrudHooksTemplate, g)
+}
+
 // TODO create a walkAttributes function that abstracts the logic of traversing
 // the spec for attributes
 

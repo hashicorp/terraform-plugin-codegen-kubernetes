@@ -84,6 +84,12 @@ type CRUDAutoOptions struct {
 	AfterCreate     bool `hcl:"after_create,optional"`
 }
 
+// Determines what hooks are needed for autocrud template if any
+type CRUDAutoHooks struct {
+	BeforeCreate bool `hcl:"before_create,optional"`
+	AfterCreate  bool `hcl:"after_create,optional"`
+}
+
 // GenerateConfig configures the options for what we should generate
 type GenerateConfig struct {
 	Schema          bool             `hcl:"schema,optional"`
@@ -91,6 +97,7 @@ type GenerateConfig struct {
 	Model           bool             `hcl:"model,optional"`
 	CRUDAuto        bool             `hcl:"autocrud,optional"`
 	CRUDAutoOptions *CRUDAutoOptions `hcl:"autocrud_options,block"`
+	CRUDAutoHooks   *CRUDAutoHooks   `hcl:"autocrud_hooks,block"`
 	CRUDStubs       bool             `hcl:"crud_stubs,optional"`
 }
 
