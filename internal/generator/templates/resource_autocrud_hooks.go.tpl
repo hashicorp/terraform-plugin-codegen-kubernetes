@@ -1,9 +1,13 @@
-package resource_hooks
+package {{ .ResourceConfig.Package }}
 
-func (r *{{ .ResourceConfig.Package }}.{{ .ResourceConfig.Kind }}) BeforeCreate(m *{{ .ResourceConfig.Package }}.{{ .ResourceConfig.Kind }}Model) {
+{{ if .ResourceConfig.Generate.CRUDAutoHooks.BeforeCreate -}}
+func (r *{{ .ResourceConfig.Kind }}) BeforeCreate(m *{{ .ResourceConfig.Kind }}Model) {
 	// TODO: Add BeforeCreate logic
 }
+{{ end }}
 
-func (r *{{ .ResourceConfig.Package }}.{{ .ResourceConfig.Kind }}) AfterCreate(m *{{ .ResourceConfig.Package }}.{{ .ResourceConfig.Kind }}Model) {
+{{ if .ResourceConfig.Generate.CRUDAutoHooks.AfterCreate -}}
+func (r *{{ .ResourceConfig.Kind }}) AfterCreate(m *{{ .ResourceConfig.Kind }}Model) {
     // TODO: Add AfterCreate logic
 }
+{{ end }}
