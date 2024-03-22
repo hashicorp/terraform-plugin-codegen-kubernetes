@@ -70,6 +70,13 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 
 	responseManifest := res.UnstructuredContent()
 	id := createID(responseManifest)
+
+	// remove internal labels and annotations not set in config
+	responseMetadata := responseManifest["metadata"].(map[string]any)
+	configMetadata := manifest["metadata"].(map[string]any)
+	removeInternalKeys(responseMetadata["labels"].(map[string]any), configMetadata["labels"].(map[string]any))
+	removeInternalKeys(responseMetadata["annotations"].(map[string]any), configMetadata["annotations"].(map[string]any))
+
 	err = FlattenManifest(responseManifest, model)
 	if err != nil {
 		return err
