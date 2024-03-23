@@ -120,7 +120,7 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 			slog.Info("Generated autocrud source file", "filename", outputFilename)
 		}
 
-		if r.Generate.CRUDAutoOptions.Hooks != nil {
+		if r.Generate.CRUDAutoOptions.Hooks.IsBlockNotEmpty() {
 			Hookscode := gen.GenerateAutoCRUDHooksCode()
 			outputFilename = fmt.Sprintf("%s_hooks.go", r.OutputFilenamePrefix)
 			if ok, _ := os.Stat(filepath.Join(wd, outputFilename)); ok == nil {
