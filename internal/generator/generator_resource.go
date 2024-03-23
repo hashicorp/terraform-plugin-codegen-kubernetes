@@ -2,15 +2,17 @@ package generator
 
 import (
 	"log/slog"
+	"time"
 
 	specresource "github.com/hashicorp/terraform-plugin-codegen-spec/resource"
 	specschema "github.com/hashicorp/terraform-plugin-codegen-spec/schema"
 )
 
 type ResourceGenerator struct {
-	ResourceConfig ResourceConfig
-	Schema         SchemaGenerator
-	ModelFields    ModelFieldsGenerator
+	GeneratedTimestamp time.Time
+	ResourceConfig     ResourceConfig
+	Schema             SchemaGenerator
+	ModelFields        ModelFieldsGenerator
 }
 
 func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) ResourceGenerator {
@@ -29,8 +31,9 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 	}}
 
 	return ResourceGenerator{
-		ResourceConfig: cfg,
-		ModelFields:    append(modelFields, GenerateModelFields(spec.Schema.Attributes, cfg.IgnoredAttributes, "")...),
+		GeneratedTimestamp: time.Now(),
+		ResourceConfig:     cfg,
+		ModelFields:        append(modelFields, GenerateModelFields(spec.Schema.Attributes, cfg.IgnoredAttributes, "")...),
 		Schema: SchemaGenerator{
 			Name:        cfg.Name,
 			Description: cfg.Description,

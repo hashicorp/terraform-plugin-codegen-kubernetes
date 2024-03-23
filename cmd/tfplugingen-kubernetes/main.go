@@ -120,13 +120,15 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 			slog.Info("Generated autocrud source file", "filename", outputFilename)
 		}
 
-		if r.Generate.CRUDAutoHooks != nil {
-			crudautohookscode := gen.GenerateAutoCRUDHooksCode()
+		if r.Generate.CRUDAutoOptions.Hooks != nil {
+			Hookscode := gen.GenerateAutoCRUDHooksCode()
 			outputFilename = fmt.Sprintf("%s_hooks.go", r.OutputFilenamePrefix)
 			if ok, _ := os.Stat(filepath.Join(wd, outputFilename)); ok == nil {
-				generator.WriteFormattedSourceFile(wd, outputFilename, crudautohookscode)
+				generator.WriteFormattedSourceFile(wd, outputFilename, Hookscode)
+				slog.Info("Generated autocrud hooks file", "filename", outputFilename)
+			} else {
+				slog.Warn("File already generated. Delete to regenerate", "filename", outputFilename)
 			}
-			slog.Info("Generated autocrud hooks file", "filename", outputFilename)
 		}
 
 		// generate model

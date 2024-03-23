@@ -19,7 +19,7 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	{{ if .ResourceConfig.Generate.CRUDAutoHooks.BeforeCreate -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeCreate -}}
 	r.BeforeCreate(&dataModel)
 	{{ end }}
 
@@ -29,7 +29,7 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
     return
 	}
 
-	{{ if .ResourceConfig.Generate.CRUDAutoHooks.AfterCreate -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterCreate -}}
 	r.AfterCreate(&dataModel)
 	{{ end }}
 	diags := resp.State.Set(ctx, &dataModel)

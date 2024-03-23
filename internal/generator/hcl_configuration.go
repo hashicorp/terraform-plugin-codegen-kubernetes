@@ -79,13 +79,12 @@ type TerraformPluginGenOpenAPIConfig struct {
 
 // CRUDAutoOptions configures options for the autocrud template
 type CRUDAutoOptions struct {
-	WaitForDeletion bool `hcl:"wait_for_deletion,optional"`
-	BeforeCreate    bool `hcl:"before_create,optional"`
-	AfterCreate     bool `hcl:"after_create,optional"`
+	WaitForDeletion bool   `hcl:"wait_for_deletion,optional"`
+	Hooks           *Hooks `hcl:"hooks,block"`
 }
 
-// Determines what hooks are needed for autocrud template if any
-type CRUDAutoHooks struct {
+// Hooks configures which hooks to include for autocrud template if necessary
+type Hooks struct {
 	BeforeCreate bool `hcl:"before_create,optional"`
 	AfterCreate  bool `hcl:"after_create,optional"`
 }
@@ -97,7 +96,6 @@ type GenerateConfig struct {
 	Model           bool             `hcl:"model,optional"`
 	CRUDAuto        bool             `hcl:"autocrud,optional"`
 	CRUDAutoOptions *CRUDAutoOptions `hcl:"autocrud_options,block"`
-	CRUDAutoHooks   *CRUDAutoHooks   `hcl:"autocrud_hooks,block"`
 	CRUDStubs       bool             `hcl:"crud_stubs,optional"`
 }
 
