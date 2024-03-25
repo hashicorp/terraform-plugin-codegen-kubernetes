@@ -42,3 +42,15 @@ func (r *{{ .ResourceConfig.Kind }}) AfterUpdate(m *{{ .ResourceConfig.Kind }}Mo
     // TODO: Add AfterUpdate logic
 }
 {{ end }}
+
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeDelete -}}
+func (r *{{ .ResourceConfig.Kind }}) BeforeDelete(m *{{ .ResourceConfig.Kind }}Model, ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// TODO: Add BeforeDelete logic
+}
+{{ end }}
+
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterDelete -}}
+func (r *{{ .ResourceConfig.Kind }}) AfterDelete(m *{{ .ResourceConfig.Kind }}Model, ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+    // TODO: Add AfterDelete logic
+}
+{{ end }}

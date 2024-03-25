@@ -99,11 +99,20 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
   {{- else -}}
   waitForDeletion := false
   {{- end }}
+
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeDelete -}}
+	r.BeforeDelete(&dataModel)
+	{{ end }}
+
 	err := autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req, waitForDeletion)
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting resource", err.Error())
     return
 	}
+
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterDelete -}}
+	r.AfterDelete(&dataModel)
+	{{ end }}
 }
 
 func (r *{{ .ResourceConfig.Kind }}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
