@@ -18,3 +18,27 @@ func (r *{{ .ResourceConfig.Kind }}) AfterCreate(m *{{ .ResourceConfig.Kind }}Mo
     // TODO: Add AfterCreate logic
 }
 {{ end }}
+
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeRead -}}
+func (r *{{ .ResourceConfig.Kind }}) BeforeRead(m *{{ .ResourceConfig.Kind }}Model, ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// TODO: Add BeforeRead logic
+}
+{{ end }}
+
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterRead -}}
+func (r *{{ .ResourceConfig.Kind }}) AfterRead(m *{{ .ResourceConfig.Kind }}Model, ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+    // TODO: Add AfterRead logic
+}
+{{ end }}
+
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeUpdate -}}
+func (r *{{ .ResourceConfig.Kind }}) BeforeUpdate(m *{{ .ResourceConfig.Kind }}Model, ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// TODO: Add BeforeUpdate logic
+}
+{{ end }}
+
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterUpdate -}}
+func (r *{{ .ResourceConfig.Kind }}) AfterUpdate(m *{{ .ResourceConfig.Kind }}Model, ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+    // TODO: Add AfterUpdate logic
+}
+{{ end }}

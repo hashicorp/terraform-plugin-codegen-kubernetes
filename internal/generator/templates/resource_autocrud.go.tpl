@@ -72,11 +72,20 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 		return
 	}
 
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeUpdate -}}
+	r.BeforeUpdate(&dataModel)
+	{{ end }}
+
 	err := autocrud.Update(ctx, r.clientGetter, r.Kind, r.APIVersion, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating resource", err.Error())
     return
 	}
+
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterUpdate -}}
+	r.AfterUpdate(&dataModel)
+	{{ end }}
+
 	diags := resp.State.Set(ctx, &dataModel)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

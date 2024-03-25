@@ -89,6 +89,8 @@ type Hooks struct {
 	AfterCreate  bool `hcl:"after_create,optional"`
 	BeforeRead   bool `hcl:"before_read,optional"`
 	AfterRead    bool `hcl:"after_read,optional"`
+	BeforeUpdate bool `hcl:"before_update,optional"`
+	AfterUpdate  bool `hcl:"after_update,optional"`
 }
 
 // GenerateConfig configures the options for what we should generate
