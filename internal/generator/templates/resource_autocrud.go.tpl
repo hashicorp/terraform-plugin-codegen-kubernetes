@@ -42,11 +42,20 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var dataModel {{ .ResourceConfig.Kind }}Model
 
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeRead -}}
+	r.BeforeRead(&dataModel)
+	{{ end }}
+
 	err := autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
     return
 	}
+
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterRead -}}
+	r.AfterRead(&dataModel)
+	{{ end }}
+
 	diags := resp.State.Set(ctx, &dataModel)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

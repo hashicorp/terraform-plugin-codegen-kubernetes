@@ -87,6 +87,8 @@ type CRUDAutoOptions struct {
 type Hooks struct {
 	BeforeCreate bool `hcl:"before_create,optional"`
 	AfterCreate  bool `hcl:"after_create,optional"`
+	BeforeRead   bool `hcl:"before_read,optional"`
+	AfterRead    bool `hcl:"after_read,optional"`
 }
 
 // GenerateConfig configures the options for what we should generate
