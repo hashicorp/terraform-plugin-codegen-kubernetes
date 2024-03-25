@@ -7,6 +7,12 @@
 
 package {{ .ResourceConfig.Package }}
 
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+)
+
 {{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeCreate -}}
 func (r *{{ .ResourceConfig.Kind }}) BeforeCreate(m *{{ .ResourceConfig.Kind }}Model, ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// TODO: Add BeforeCreate logic
