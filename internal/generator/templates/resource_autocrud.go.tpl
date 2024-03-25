@@ -20,7 +20,7 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeCreate -}}
-	r.BeforeCreate(&dataModel)
+	r.BeforeCreate(ctx, req, resp, &dataModel)
 	{{ end }}
 
 	err := autocrud.Create(ctx, r.clientGetter, r.APIVersion, r.Kind, &dataModel)
@@ -30,7 +30,7 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterCreate -}}
-	r.AfterCreate(&dataModel)
+	r.AfterCreate(ctx, req, resp, &dataModel)
 	{{ end }}
 	diags := resp.State.Set(ctx, &dataModel)
 	resp.Diagnostics.Append(diags...)
@@ -43,7 +43,7 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 	var dataModel {{ .ResourceConfig.Kind }}Model
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeRead -}}
-	r.BeforeRead(&dataModel)
+	r.BeforeRead(ctx, req, resp, &dataModel)
 	{{ end }}
 
 	err := autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
@@ -53,7 +53,7 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterRead -}}
-	r.AfterRead(&dataModel)
+	r.AfterRead(ctx, req, resp, &dataModel)
 	{{ end }}
 
 	diags := resp.State.Set(ctx, &dataModel)
@@ -73,7 +73,7 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeUpdate -}}
-	r.BeforeUpdate(&dataModel)
+	r.BeforeUpdate(ctx, req, resp, &dataModel)
 	{{ end }}
 
 	err := autocrud.Update(ctx, r.clientGetter, r.Kind, r.APIVersion, &dataModel)
@@ -83,7 +83,7 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterUpdate -}}
-	r.AfterUpdate(&dataModel)
+	r.AfterUpdate(ctx, req, resp, &dataModel)
 	{{ end }}
 
 	diags := resp.State.Set(ctx, &dataModel)
@@ -101,7 +101,7 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
   {{- end }}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeDelete -}}
-	r.BeforeDelete(&dataModel)
+	r.BeforeDelete(ctx, req, resp, &dataModel)
 	{{ end }}
 
 	err := autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req, waitForDeletion)
@@ -111,7 +111,7 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterDelete -}}
-	r.AfterDelete(&dataModel)
+	r.AfterDelete(ctx, req, resp, &dataModel)
 	{{ end }}
 }
 
