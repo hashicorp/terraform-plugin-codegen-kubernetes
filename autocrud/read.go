@@ -56,10 +56,6 @@ func Read(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVer
 	// remove internal labels and annotations not set in config
 	responseMetadata := responseManifest["metadata"].(map[string]any)
 	// we are expanding only for the sake of retrieving metadata
-	diag := req.State.Get(ctx, model)
-	if diag.HasError() {
-		return DiagnosticsError{diag}
-	}
 	manifest := ExpandModel(model)
 	configMetadata := manifest["metadata"].(map[string]any)
 	removeInternalKeys(responseMetadata["labels"].(map[string]any), configMetadata["labels"].(map[string]any))

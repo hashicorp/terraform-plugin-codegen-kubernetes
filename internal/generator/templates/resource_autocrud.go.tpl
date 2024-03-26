@@ -62,6 +62,11 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 	{{ end }}
 	{{ end }}
 	{{ end }}
+	diag := req.State.Get(ctx, &dataModel)
+	resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
+		return
+	}
 
 	err := autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
 	if err != nil {
