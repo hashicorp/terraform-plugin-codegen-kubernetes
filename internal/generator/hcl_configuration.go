@@ -85,14 +85,22 @@ type CRUDAutoOptions struct {
 
 // Hooks configures which hooks to include for autocrud template if necessary
 type Hooks struct {
-	BeforeCreate bool `hcl:"before_create,optional"`
-	AfterCreate  bool `hcl:"after_create,optional"`
-	BeforeRead   bool `hcl:"before_read,optional"`
-	AfterRead    bool `hcl:"after_read,optional"`
-	BeforeUpdate bool `hcl:"before_update,optional"`
-	AfterUpdate  bool `hcl:"after_update,optional"`
-	BeforeDelete bool `hcl:"before_delete,optional"`
-	AfterDelete  bool `hcl:"after_delete,optional"`
+	BeforeHook *BeforeHook `hcl:"before,block"`
+	AfterHook  *AfterHook  `hcl:"after,block"`
+}
+
+type BeforeHook struct {
+	Create bool `hcl:"create,optional"`
+	Read   bool `hcl:"read,optional"`
+	Update bool `hcl:"update,optional"`
+	Delete bool `hcl:"delete,optional"`
+}
+
+type AfterHook struct {
+	Create bool `hcl:"create,optional"`
+	Read   bool `hcl:"read,optional"`
+	Update bool `hcl:"update,optional"`
+	Delete bool `hcl:"delete,optional"`
 }
 
 // GenerateConfig configures the options for what we should generate
@@ -118,5 +126,11 @@ func ParseHCLConfig(filename string) (GeneratorConfig, error) {
 
 // Checks whether hooks are used to prevent file from being generated if block is empty or all set to false.
 func (h *Hooks) IsEmpty() bool {
-	return !(h.AfterCreate || h.BeforeCreate || h.AfterRead || h.BeforeRead || h.AfterUpdate || h.BeforeUpdate || h.AfterDelete || h.BeforeDelete)
+	if h.BeforeHook != nil {
+		return !(h.BeforeHook.Create || h.BeforeHook.Read || h.BeforeHook.Update || h.BeforeHook.Delete)
+	}
+	if h.AfterHook != nil {
+		return !(h.AfterHook.Create || h.AfterHook.Read || h.AfterHook.Update || h.AfterHook.Delete)
+	}
+	return true
 }

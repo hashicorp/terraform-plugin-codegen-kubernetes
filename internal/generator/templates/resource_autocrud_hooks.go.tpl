@@ -13,50 +13,66 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeCreate -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Create -}}
 func (r *{{ .ResourceConfig.Kind }}) BeforeCreate(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse, m *{{ .ResourceConfig.Kind }}Model) {
 	// TODO: Add BeforeCreate logic
 }
 {{ end }}
+{{ end }}
 
-{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterCreate -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterHook -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterHook.Create -}}
 func (r *{{ .ResourceConfig.Kind }}) AfterCreate(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse, m *{{ .ResourceConfig.Kind }}Model) {
     // TODO: Add AfterCreate logic
 }
 {{ end }}
+{{ end }}
 
-{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeRead -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Read -}}
 func (r *{{ .ResourceConfig.Kind }}) BeforeRead(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, m *{{ .ResourceConfig.Kind }}Model) {
 	// TODO: Add BeforeRead logic
 }
 {{ end }}
+{{ end }}
 
-{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterRead -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterHook -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterHook.Read -}}
 func (r *{{ .ResourceConfig.Kind }}) AfterRead(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, m *{{ .ResourceConfig.Kind }}Model) {
     // TODO: Add AfterRead logic
 }
 {{ end }}
+{{ end }}
 
-{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeUpdate -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Update -}}
 func (r *{{ .ResourceConfig.Kind }}) BeforeUpdate(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, m *{{ .ResourceConfig.Kind }}Model) {
 	// TODO: Add BeforeUpdate logic
 }
 {{ end }}
+{{ end }}
 
-{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterUpdate -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterHook -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterHook.Update -}}
 func (r *{{ .ResourceConfig.Kind }}) AfterUpdate(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, m *{{ .ResourceConfig.Kind }}Model) {
     // TODO: Add AfterUpdate logic
 }
 {{ end }}
+{{ end }}
 
-{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeDelete -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Delete -}}
 func (r *{{ .ResourceConfig.Kind }}) BeforeDelete(ctx context.Context, req resource.DestroyRequest, resp *resource.DestroyResponse, m *{{ .ResourceConfig.Kind }}Model) {
 	// TODO: Add BeforeDelete logic
 }
 {{ end }}
+{{ end }}
 
-{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterDelete -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterHook -}}
+{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.AfterHook.Delete -}}
 func (r *{{ .ResourceConfig.Kind }}) AfterDelete(ctx context.Context, req resource.DestroyRequest, resp *resource.DestroyResponse, m *{{ .ResourceConfig.Kind }}Model) {
     // TODO: Add AfterDelete logic
 }
+{{ end }}
 {{ end }}
