@@ -6,10 +6,11 @@ type AttributeGenerator struct {
 	AttributeType string
 	ElementType   string
 
-	Required    bool
-	Description string
-	Computed    bool
-	Sensitive   bool
+	Required     bool
+	Description  string
+	Computed     bool
+	Sensitive    bool
+	DefaultValue bool
 
 	NestedAttributes AttributesGenerator
 }

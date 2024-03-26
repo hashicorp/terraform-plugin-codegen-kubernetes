@@ -34,7 +34,7 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		Schema: SchemaGenerator{
 			Name:        cfg.Name,
 			Description: cfg.Description,
-			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, "")...),
+			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.DefaultValues, "")...),
 		},
 	}
 }
@@ -62,7 +62,7 @@ func (g *ResourceGenerator) GenerateAutoCRUDCode() string {
 // TODO create a walkAttributes function that abstracts the logic of traversing
 // the spec for attributes
 
-func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive []string, path string) AttributesGenerator {
+func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive []string, default_values map[string]interface{}, path string) AttributesGenerator {
 	generatedAttrs := AttributesGenerator{}
 	for _, attr := range attrs {
 		attributePath := path + attr.Name
