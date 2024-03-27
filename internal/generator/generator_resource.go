@@ -34,7 +34,7 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		Schema: SchemaGenerator{
 			Name:        cfg.Name,
 			Description: cfg.Description,
-			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.DefaultValues, "")...),
+			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.DefaultValueAttributes, "")...),
 		},
 	}
 }
@@ -62,7 +62,7 @@ func (g *ResourceGenerator) GenerateAutoCRUDCode() string {
 // TODO create a walkAttributes function that abstracts the logic of traversing
 // the spec for attributes
 
-func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive []string, default_values map[string]interface{}, path string) AttributesGenerator {
+func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive, default_values []string, path string) AttributesGenerator {
 	generatedAttrs := AttributesGenerator{}
 	for _, attr := range attrs {
 		attributePath := path + attr.Name
@@ -72,10 +72,11 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 		}
 
 		generatedAttr := AttributeGenerator{
-			Name:      attr.Name,
-			Required:  stringInSlice(attributePath, required),
-			Computed:  stringInSlice(attributePath, computed),
-			Sensitive: stringInSlice(attributePath, sensitive),
+			Name:         attr.Name,
+			Required:     stringInSlice(attributePath, required),
+			Computed:     stringInSlice(attributePath, computed),
+			Sensitive:    stringInSlice(attributePath, sensitive),
+			DefaultValue: stringInSlice(attributePath, default_values),
 		}
 		switch {
 		case attr.Bool != nil:
@@ -115,13 +116,13 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 				generatedAttr.Description = *attr.SingleNested.Description
 			}
 			generatedAttr.AttributeType = SingleNestedAttributeType
-			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, ignored, computed, required, sensitive, attributePath+".")
+			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, ignored, computed, required, sensitive, default_values, attributePath+".")
 		case attr.ListNested != nil:
 			if attr.ListNested.Description != nil {
 				generatedAttr.Description = *attr.ListNested.Description
 			}
 			generatedAttr.AttributeType = ListNestedAttributeType
-			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, ignored, computed, required, sensitive, attributePath+"[*].")
+			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, ignored, computed, required, sensitive, default_values, attributePath+"[*].")
 		}
 		generatedAttrs = append(generatedAttrs, generatedAttr)
 	}

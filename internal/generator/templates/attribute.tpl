@@ -13,6 +13,9 @@ Computed: true,
 {{- if .Sensitive }}
 Sensitive: true,
 {{- end }}
+{{- if .DefaultValue}}
+Default: 
+{{- end}}
 {{- if .NestedAttributes }}
   {{- if eq .AttributeType "ListNestedAttribute" }}
   NestedObject: schema.NestedAttributeObject{

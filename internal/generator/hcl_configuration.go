@@ -56,7 +56,7 @@ type ResourceConfig struct {
 	OpenAPIConfig TerraformPluginGenOpenAPIConfig `hcl:"openapi,block"`
 
 	//
-	DefaultValues map[string]interface{} `hcl:"default_values,block"`
+	DefaultValueAttributes []string `hcl:"default_value_attributes,optional"`
 
 	// Disabled tells the generator to skip this configuration
 	Disabled bool `hcl:"disabled,optional"`
