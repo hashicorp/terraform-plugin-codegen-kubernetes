@@ -11,7 +11,7 @@ Optional: true,
 Computed: true,
 {{- end }}
 {{- if .DefaultValue}}
-Default: {{- if eq .AttributeType "StringAttribute"}} "THIS IS A STRING" {{- end}} {{- if eq .AttributeType "BoolAttribute"}} "THIS IS A BOOL" {{- end}} {{- if eq .AttributeType "Int64Attribute"}} "THIS IS An INT64" {{- end}}
+Default: {{- if eq .AttributeType "StringAttribute"}}stringdefault.StaticString(""), // TODO: add default value{{- end}} {{- if eq .AttributeType "BoolAttribute"}}booldefault.StaticBool(false), //TODO change to default value {{- end}} {{- if eq .AttributeType "Int64Attribute"}}int64default.StaticInt64(0), //TODO change to default value{{- end}}
 {{- end}}
 {{- if .Sensitive }}
 Sensitive: true,
