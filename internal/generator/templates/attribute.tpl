@@ -10,12 +10,12 @@ Optional: true,
 {{- if .Computed }}
 Computed: true,
 {{- end }}
+{{- if .DefaultValue}}
+Default: {{- if eq .AttributeType "StringAttribute"}} "THIS IS A STRING" {{- end}} {{- if eq .AttributeType "BoolAttribute"}} "THIS IS A BOOL" {{- end}} {{- if eq .AttributeType "Int64Attribute"}} "THIS IS An INT64" {{- end}}
+{{- end}}
 {{- if .Sensitive }}
 Sensitive: true,
 {{- end }}
-{{- if .DefaultValue}}
-Default: 
-{{- end}}
 {{- if .NestedAttributes }}
   {{- if eq .AttributeType "ListNestedAttribute" }}
   NestedObject: schema.NestedAttributeObject{
