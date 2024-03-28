@@ -126,11 +126,13 @@ func ParseHCLConfig(filename string) (GeneratorConfig, error) {
 
 // Checks whether hooks are used to prevent file from being generated if block is empty or all set to false.
 func (h *Hooks) IsEmpty() bool {
-	if h.BeforeHook != nil {
-		return !(h.BeforeHook.Create || h.BeforeHook.Read || h.BeforeHook.Update || h.BeforeHook.Delete)
-	}
-	if h.AfterHook != nil {
-		return !(h.AfterHook.Create || h.AfterHook.Read || h.AfterHook.Update || h.AfterHook.Delete)
+	if h != nil {
+		if h.BeforeHook != nil {
+			return !(h.BeforeHook.Create || h.BeforeHook.Read || h.BeforeHook.Update || h.BeforeHook.Delete)
+		}
+		if h.AfterHook != nil {
+			return !(h.AfterHook.Create || h.AfterHook.Read || h.AfterHook.Update || h.AfterHook.Delete)
+		}
 	}
 	return true
 }
