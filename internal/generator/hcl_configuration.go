@@ -111,6 +111,7 @@ type GenerateConfig struct {
 	CRUDAuto        bool             `hcl:"autocrud,optional"`
 	CRUDAutoOptions *CRUDAutoOptions `hcl:"autocrud_options,block"`
 	CRUDStubs       bool             `hcl:"crud_stubs,optional"`
+	WithoutTimeouts bool             `hcl:"without_timeouts,optional"`
 }
 
 // ParseHCLConfig parses the .hcl configuraiton file and

@@ -1,9 +1,10 @@
 package generator
 
 type SchemaGenerator struct {
-	Name        string
-	Description string
-	Attributes  AttributesGenerator
+	Name            string
+	Description     string
+	WithoutTimeouts bool
+	Attributes      AttributesGenerator
 }
 
 func (g SchemaGenerator) String() string {
