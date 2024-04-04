@@ -8,4 +8,7 @@ import (
 type KubernetesClientGetter interface {
 	DynamicClient() (dynamic.Interface, error)
 	DiscoveryClient() (discovery.DiscoveryInterface, error)
+
+	IgnoreLabels() []string
+	IgnoreAnnotations() []string
 }
