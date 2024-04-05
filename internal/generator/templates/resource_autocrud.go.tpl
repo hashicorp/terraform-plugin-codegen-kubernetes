@@ -29,8 +29,8 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	{{ end }}
 
     timeout, diag := dataModel.Timeouts.Create(ctx, {{ .ResourceConfig.Generate.Timeouts.CreateDuration }}) // {{  .ResourceConfig.Generate.Timeouts.Create }}
-    if diag.HasError() {
-		resp.Diagnostics.Append(diag...)
+    resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
 		return
     }
     ctx, cancel := context.WithTimeout(ctx, timeout)
@@ -77,8 +77,8 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 	}
 
 	timeout, diag := dataModel.Timeouts.Read(ctx, {{ .ResourceConfig.Generate.Timeouts.ReadDuration }}) // {{  .ResourceConfig.Generate.Timeouts.Read }}
-    if diag.HasError() {
-		resp.Diagnostics.Append(diag...)
+    resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
 		return
     }
     ctx, cancel := context.WithTimeout(ctx, timeout)
@@ -126,8 +126,8 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 	{{ end }}
 	{{ end }}
 	timeout, diag := dataModel.Timeouts.Update(ctx, {{ .ResourceConfig.Generate.Timeouts.UpdateDuration }}) // {{  .ResourceConfig.Generate.Timeouts.Update }}
-    if diag.HasError() {
-		resp.Diagnostics.Append(diag...)
+    resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
 		return
     }
     ctx, cancel := context.WithTimeout(ctx, timeout)
@@ -182,8 +182,8 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 	}
 
 	timeout, diag := dataModel.Timeouts.Delete(ctx, {{ .ResourceConfig.Generate.Timeouts.DeleteDuration }}) // {{  .ResourceConfig.Generate.Timeouts.Delete }}
-    if diag.HasError() {
-		resp.Diagnostics.Append(diag...)
+    resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
 		return
     }
     ctx, cancel := context.WithTimeout(ctx, timeout)
