@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 
 	"github.com/hashicorp/terraform-plugin-codegen-kubernetes/autocrud"
 )
@@ -29,10 +28,18 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	{{ end }}
 	{{ end }}
 
+    timeout, diag := dataModel.Timeouts.Create(ctx, {{ .ResourceConfig.Generate.Timeouts.CreateDuration }}) // {{  .ResourceConfig.Generate.Timeouts.Create }}
+    if diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		return
+    }
+    ctx, cancel := context.WithTimeout(ctx, timeout)
+    defer cancel()
+
 	err := autocrud.Create(ctx, r.clientGetter, r.APIVersion, r.Kind, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating resource", err.Error())
-    return
+    	return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
@@ -69,10 +76,18 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 		return
 	}
 
+	timeout, diag := dataModel.Timeouts.Read(ctx, {{ .ResourceConfig.Generate.Timeouts.ReadDuration }}) // {{  .ResourceConfig.Generate.Timeouts.Read }}
+    if diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		return
+    }
+    ctx, cancel := context.WithTimeout(ctx, timeout)
+    defer cancel()
+
 	err := autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
-    return
+    	return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
@@ -110,11 +125,18 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 	{{ end }}
 	{{ end }}
 	{{ end }}
+	timeout, diag := dataModel.Timeouts.Update(ctx, {{ .ResourceConfig.Generate.Timeouts.UpdateDuration }}) // {{  .ResourceConfig.Generate.Timeouts.Update }}
+    if diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		return
+    }
+    ctx, cancel := context.WithTimeout(ctx, timeout)
+    defer cancel()
 
 	err := autocrud.Update(ctx, r.clientGetter, r.Kind, r.APIVersion, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating resource", err.Error())
-    return
+    	return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
@@ -151,10 +173,26 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 	{{ end }}
 	{{ end }}
 
+	var dataModel {{ .ResourceConfig.Kind }}Model
+
+	diag := req.State.Get(ctx, &dataModel)
+	resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
+		return
+	}
+
+	timeout, diag := dataModel.Timeouts.Delete(ctx, {{ .ResourceConfig.Generate.Timeouts.DeleteDuration }}) // {{  .ResourceConfig.Generate.Timeouts.Delete }}
+    if diag.HasError() {
+		resp.Diagnostics.Append(diag...)
+		return
+    }
+    ctx, cancel := context.WithTimeout(ctx, timeout)
+    defer cancel()
+
 	err := autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req, waitForDeletion)
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting resource", err.Error())
-    return
+    	return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}

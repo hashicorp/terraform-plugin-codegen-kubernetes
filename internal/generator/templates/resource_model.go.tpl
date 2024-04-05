@@ -6,8 +6,6 @@ import (
 )
 
 type {{ .ResourceConfig.Kind }}Model struct {
-  {{ .ModelFields }}
-  {{- if not .ResourceConfig.Generate.WithoutTimeouts }}
   Timeouts    timeouts.Value `tfsdk:"timeouts"`
-  {{- end }}
+  {{ .ModelFields }}
 }

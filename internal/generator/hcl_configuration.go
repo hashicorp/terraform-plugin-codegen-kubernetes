@@ -1,6 +1,10 @@
 package generator
 
-import "github.com/hashicorp/hcl/v2/hclsimple"
+import (
+	"time"
+
+	"github.com/hashicorp/hcl/v2/hclsimple"
+)
 
 // GeneratorConfig is the top level code generator configuration
 type GeneratorConfig struct {
@@ -103,6 +107,18 @@ type AfterHook struct {
 	Delete bool `hcl:"delete,optional"`
 }
 
+// Timeouts allowed overriding the 20m default timeout for a CRUD method
+type Timeouts struct {
+	Create         string `hcl:"create,optional"`
+	CreateDuration int64
+	Read           string `hcl:"read,optional"`
+	ReadDuration   int64
+	Update         string `hcl:"update,optional"`
+	UpdateDuration int64
+	Delete         string `hcl:"delete,optional"`
+	DeleteDuration int64
+}
+
 // GenerateConfig configures the options for what we should generate
 type GenerateConfig struct {
 	Schema          bool             `hcl:"schema,optional"`
@@ -111,7 +127,7 @@ type GenerateConfig struct {
 	CRUDAuto        bool             `hcl:"autocrud,optional"`
 	CRUDAutoOptions *CRUDAutoOptions `hcl:"autocrud_options,block"`
 	CRUDStubs       bool             `hcl:"crud_stubs,optional"`
-	WithoutTimeouts bool             `hcl:"without_timeouts,optional"`
+	Timeouts        *Timeouts        `hcl:"timeouts,block"`
 }
 
 // ParseHCLConfig parses the .hcl configuraiton file and
@@ -122,6 +138,55 @@ func ParseHCLConfig(filename string) (GeneratorConfig, error) {
 	if err != nil {
 		return config, err
 	}
+
+	// parse timeout durations
+	// SDKv2 had a 20m default timeout duration for all CRUD methods
+	const defaultDurationStr = "20m"
+	for i, r := range config.Resources {
+
+		if r.Generate.Timeouts == nil {
+			r.Generate.Timeouts = &Timeouts{}
+		}
+		if r.Generate.Timeouts.Create == "" {
+			r.Generate.Timeouts.Create = defaultDurationStr
+		}
+		if r.Generate.Timeouts.Read == "" {
+			r.Generate.Timeouts.Read = defaultDurationStr
+		}
+		if r.Generate.Timeouts.Update == "" {
+			r.Generate.Timeouts.Update = defaultDurationStr
+		}
+		if r.Generate.Timeouts.Delete == "" {
+			r.Generate.Timeouts.Delete = defaultDurationStr
+		}
+
+		d, err := time.ParseDuration(r.Generate.Timeouts.Create)
+		if err != nil {
+			return config, err
+		}
+		r.Generate.Timeouts.CreateDuration = int64(d)
+
+		d, err = time.ParseDuration(r.Generate.Timeouts.Read)
+		if err != nil {
+			return config, err
+		}
+		r.Generate.Timeouts.ReadDuration = int64(d)
+
+		d, err = time.ParseDuration(r.Generate.Timeouts.Update)
+		if err != nil {
+			return config, err
+		}
+		r.Generate.Timeouts.UpdateDuration = int64(d)
+
+		d, err = time.ParseDuration(r.Generate.Timeouts.Delete)
+		if err != nil {
+			return config, err
+		}
+		r.Generate.Timeouts.DeleteDuration = int64(d)
+
+		config.Resources[i] = r
+	}
+
 	return config, nil
 }
 

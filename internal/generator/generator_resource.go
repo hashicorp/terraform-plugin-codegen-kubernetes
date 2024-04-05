@@ -35,10 +35,9 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		ResourceConfig:     cfg,
 		ModelFields:        append(modelFields, GenerateModelFields(spec.Schema.Attributes, cfg.IgnoredAttributes, "")...),
 		Schema: SchemaGenerator{
-			Name:            cfg.Name,
-			Description:     cfg.Description,
-			WithoutTimeouts: cfg.Generate.WithoutTimeouts,
-			Attributes:      append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, "")...),
+			Name:        cfg.Name,
+			Description: cfg.Description,
+			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, "")...),
 		},
 	}
 }
