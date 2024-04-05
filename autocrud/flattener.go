@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"net/url"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -129,5 +130,27 @@ func isInternalKey(annotationKey string) bool {
 	if strings.Contains(annotationKey, "deprecated.daemonset.template.generation") {
 		return true
 	}
+	return false
+}
+
+// removeKeys removes given Kubernetes metadata(annotations and labels) keys.
+// In that case, they won't be available in the TF state file and will be ignored during apply/plan operations.
+func removeKeys(m map[string]any, d map[string]any, ignoreKubernetesMetadataKeys []string) {
+	for k := range m {
+		if ignoreKey(k, ignoreKubernetesMetadataKeys) && !isKeyInMap(k, d) {
+			delete(m, k)
+		}
+	}
+}
+
+// ignoreKey reports whether the Kubernetes metadata(annotations and labels) key contains
+// any match of the regular expression pattern from the expressions slice.
+func ignoreKey(key string, expressions []string) bool {
+	for _, e := range expressions {
+		if ok, _ := regexp.MatchString(e, key); ok {
+			return true
+		}
+	}
+
 	return false
 }

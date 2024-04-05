@@ -76,6 +76,9 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 	configMetadata := manifest["metadata"].(map[string]any)
 	removeInternalKeys(responseMetadata["labels"].(map[string]any), configMetadata["labels"].(map[string]any))
 	removeInternalKeys(responseMetadata["annotations"].(map[string]any), configMetadata["annotations"].(map[string]any))
+	// remove regex matching labels and annotations specified by the user in the provider block
+	removeKeys(responseMetadata["labels"].(map[string]any), configMetadata["labels"].(map[string]any), clientGetter.IgnoreLabels())
+	removeKeys(responseMetadata["annotations"].(map[string]any), configMetadata["annotations"].(map[string]any), clientGetter.IgnoreAnnotations())
 
 	err = FlattenManifest(responseManifest, model)
 	if err != nil {
