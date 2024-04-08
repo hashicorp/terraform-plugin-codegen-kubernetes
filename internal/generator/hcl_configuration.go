@@ -79,7 +79,28 @@ type TerraformPluginGenOpenAPIConfig struct {
 
 // CRUDAutoOptions configures options for the autocrud template
 type CRUDAutoOptions struct {
-	WaitForDeletion bool `hcl:"wait_for_deletion,optional"`
+	WaitForDeletion bool   `hcl:"wait_for_deletion,optional"`
+	Hooks           *Hooks `hcl:"hooks,block"`
+}
+
+// Hooks configures which hooks to include for autocrud template if necessary
+type Hooks struct {
+	BeforeHook *BeforeHook `hcl:"before,block"`
+	AfterHook  *AfterHook  `hcl:"after,block"`
+}
+
+type BeforeHook struct {
+	Create bool `hcl:"create,optional"`
+	Read   bool `hcl:"read,optional"`
+	Update bool `hcl:"update,optional"`
+	Delete bool `hcl:"delete,optional"`
+}
+
+type AfterHook struct {
+	Create bool `hcl:"create,optional"`
+	Read   bool `hcl:"read,optional"`
+	Update bool `hcl:"update,optional"`
+	Delete bool `hcl:"delete,optional"`
 }
 
 // GenerateConfig configures the options for what we should generate
@@ -101,4 +122,17 @@ func ParseHCLConfig(filename string) (GeneratorConfig, error) {
 		return config, err
 	}
 	return config, nil
+}
+
+// Checks whether hooks are used to prevent file from being generated if block is empty or all set to false.
+func (h *Hooks) IsEmpty() bool {
+	if h != nil {
+		if h.BeforeHook != nil {
+			return !(h.BeforeHook.Create || h.BeforeHook.Read || h.BeforeHook.Update || h.BeforeHook.Delete)
+		}
+		if h.AfterHook != nil {
+			return !(h.AfterHook.Create || h.AfterHook.Read || h.AfterHook.Update || h.AfterHook.Delete)
+		}
+	}
+	return true
 }
