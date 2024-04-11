@@ -107,7 +107,7 @@ type AfterHook struct {
 	Delete bool `hcl:"delete,optional"`
 }
 
-// Timeouts allowed overriding the 20m default timeout for a CRUD method
+// Timeouts allowes overriding the 20m default timeout for a CRUD method
 type Timeouts struct {
 	Create         string `hcl:"create,optional"`
 	CreateDuration int64
