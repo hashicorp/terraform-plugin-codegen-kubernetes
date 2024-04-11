@@ -53,16 +53,12 @@ func Read(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVer
 
 	responseManifest := res.UnstructuredContent()
 
-	// remove internal labels and annotations not set in config
 	responseMetadata := responseManifest["metadata"].(map[string]any)
 	// we are expanding only for the sake of retrieving metadata
 	manifest := ExpandModel(model)
 	configMetadata := manifest["metadata"].(map[string]any)
-	removeInternalKeys(responseMetadata["labels"].(map[string]any), configMetadata["labels"].(map[string]any))
-	removeInternalKeys(responseMetadata["annotations"].(map[string]any), configMetadata["annotations"].(map[string]any))
-	// remove regex matching labels and annotations specified by the user in the provider block
-	removeKeys(responseMetadata["labels"].(map[string]any), configMetadata["labels"].(map[string]any), clientGetter.IgnoreLabels())
-	removeKeys(responseMetadata["annotations"].(map[string]any), configMetadata["annotations"].(map[string]any), clientGetter.IgnoreAnnotations())
+
+	shimMetadata(responseMetadata, configMetadata, clientGetter.IgnoreLabels(), clientGetter.IgnoreAnnotations())
 
 	FlattenManifest(responseManifest, model)
 	setID(id, &model)

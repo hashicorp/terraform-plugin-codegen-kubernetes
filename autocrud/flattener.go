@@ -3,10 +3,7 @@ package autocrud
 import (
 	"fmt"
 	"math/big"
-	"net/url"
 	"reflect"
-	"regexp"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -90,67 +87,4 @@ func flatten(manifest map[string]any, model any) error {
 		}
 	}
 	return nil
-}
-
-func removeInternalKeys(m map[string]any, d map[string]any) {
-	for k := range m {
-		if isInternalKey(k) && !isKeyInMap(k, d) {
-			delete(m, k)
-		}
-	}
-}
-
-func isKeyInMap(key string, d map[string]any) bool {
-	_, ok := d[key]
-	return ok
-}
-
-func isInternalKey(annotationKey string) bool {
-	u, err := url.Parse("//" + annotationKey)
-	if err != nil {
-		return false
-	}
-
-	// allow user specified application specific keys
-	if u.Hostname() == "app.kubernetes.io" {
-		return false
-	}
-
-	// allow AWS load balancer configuration annotations
-	if u.Hostname() == "service.beta.kubernetes.io" {
-		return false
-	}
-
-	// internal *.kubernetes.io keys
-	if strings.HasSuffix(u.Hostname(), "kubernetes.io") {
-		return true
-	}
-
-	// Specific to DaemonSet annotations, generated & controlled by the server.
-	if strings.Contains(annotationKey, "deprecated.daemonset.template.generation") {
-		return true
-	}
-	return false
-}
-
-// removeKeys removes given Kubernetes metadata(annotations and labels) keys.
-// In that case, they won't be available in the TF state file and will be ignored during apply/plan operations.
-func removeKeys(m map[string]any, d map[string]any, ignoreKubernetesMetadataKeys []string) {
-	for k := range m {
-		if ignoreKey(k, ignoreKubernetesMetadataKeys) && !isKeyInMap(k, d) {
-			delete(m, k)
-		}
-	}
-}
-
-// ignoreKey reports whether the Kubernetes metadata(annotations and labels) key contains
-// any match of the regular expression pattern from the expressions slice.
-func ignoreKey(key string, expressions []string) bool {
-	for _, e := range expressions {
-		if ok, _ := regexp.MatchString(e, key); ok {
-			return true
-		}
-	}
-
-	return false
 }
