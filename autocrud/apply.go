@@ -70,6 +70,12 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 
 	responseManifest := res.UnstructuredContent()
 	id := createID(responseManifest)
+
+	responseMetadata := responseManifest["metadata"].(map[string]any)
+	configMetadata := manifest["metadata"].(map[string]any)
+
+	shimMetadata(responseMetadata, configMetadata, clientGetter.IgnoreLabels(), clientGetter.IgnoreAnnotations())
+
 	err = FlattenManifest(responseManifest, model)
 	if err != nil {
 		return err
