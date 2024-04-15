@@ -141,6 +141,14 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 			slog.Info("Generated model source file", "filename", outputFilename)
 		}
 
+		// generate default_values
+		if r.DefaultValueAttributes != nil {
+			defaultValuesCode := gen.GenerateDefaultValuesCode()
+			outputFilename = fmt.Sprintf("%s_default_values.go", r.OutputFilenamePrefix)
+			generator.WriteFormattedSourceFile(wd, outputFilename, defaultValuesCode)
+			slog.Info("Generated default values source file", "filename", outputFilename)
+		}
+
 		generatedResources = append(generatedResources, r)
 	}
 	return generatedResources, nil

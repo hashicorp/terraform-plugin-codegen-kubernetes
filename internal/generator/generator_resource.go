@@ -66,6 +66,10 @@ func (g *ResourceGenerator) GenerateAutoCRUDHooksCode() string {
 	return renderTemplate(autocrudHooksTemplate, g)
 }
 
+func (g *ResourceGenerator) GenerateDefaultValuesCode() string {
+	return renderTemplate(defaultValuesTemplate, g)
+}
+
 // TODO create a walkAttributes function that abstracts the logic of traversing
 // the spec for attributes
 
