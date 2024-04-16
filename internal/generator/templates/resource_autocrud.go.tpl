@@ -2,6 +2,7 @@ package {{ .ResourceConfig.Package }}
 
 
 import (
+  "time"
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -28,10 +29,23 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	{{ end }}
 	{{ end }}
 
-	err := autocrud.Create(ctx, r.clientGetter, r.APIVersion, r.Kind, &dataModel)
+	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Create }}")
+	if err != nil {
+		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
+	return 
+	}
+	timeout, diag := dataModel.Timeouts.Create(ctx, defaultTimeout)
+	resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	err = autocrud.Create(ctx, r.clientGetter, r.APIVersion, r.Kind, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating resource", err.Error())
-    return
+		return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
@@ -68,10 +82,23 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-	err := autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
+	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Read }}")
+	if err != nil {
+		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
+		return 
+	}
+	timeout, diag := dataModel.Timeouts.Read(ctx, defaultTimeout) 
+	resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	err = autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
-    return
+		return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
@@ -110,10 +137,23 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 	{{ end }}
 	{{ end }}
 
-	err := autocrud.Update(ctx, r.clientGetter, r.Kind, r.APIVersion, &dataModel)
+	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Update }}")
+	if err != nil {
+		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
+		return 
+	}
+	timeout, diag := dataModel.Timeouts.Update(ctx, defaultTimeout)
+	resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	err = autocrud.Update(ctx, r.clientGetter, r.Kind, r.APIVersion, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error updating resource", err.Error())
-    return
+		return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
@@ -134,11 +174,11 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 }
 
 func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-  {{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
-  waitForDeletion := {{ .ResourceConfig.Generate.CRUDAutoOptions.WaitForDeletion }}
-  {{- else -}}
-  waitForDeletion := false
-  {{- end }}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
+	waitForDeletion := {{ .ResourceConfig.Generate.CRUDAutoOptions.WaitForDeletion }}
+	{{- else -}}
+	waitForDeletion := false
+	{{- end }}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
@@ -150,10 +190,31 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 	{{ end }}
 	{{ end }}
 
-	err := autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req, waitForDeletion)
+	var dataModel {{ .ResourceConfig.Kind }}Model
+
+	diag := req.State.Get(ctx, &dataModel)
+	resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
+		return
+	}
+
+	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Delete }}")
+	if err != nil {
+		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
+		return 
+	}
+	timeout, diag := dataModel.Timeouts.Delete(ctx, defaultTimeout)
+	resp.Diagnostics.Append(diag...)
+	if diag.HasError() {
+		return
+	}
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	err = autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req, waitForDeletion)
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting resource", err.Error())
-    return
+		return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
