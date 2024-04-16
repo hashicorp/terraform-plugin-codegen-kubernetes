@@ -29,11 +29,11 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	{{ end }}
 	{{ end }}
 
-  defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Create }}")
-  if err != nil {
+	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Create }}")
+	if err != nil {
 		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
-    return 
-  }
+	return 
+	}
 	timeout, diag := dataModel.Timeouts.Create(ctx, defaultTimeout)
 	resp.Diagnostics.Append(diag...)
 	if diag.HasError() {
@@ -45,7 +45,7 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	err = autocrud.Create(ctx, r.clientGetter, r.APIVersion, r.Kind, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating resource", err.Error())
-	return
+		return
 	}
 
 	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
@@ -82,11 +82,11 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 		return
 	}
 
-  defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Read }}")
-  if err != nil {
+	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Read }}")
+	if err != nil {
 		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
-    return 
-  }
+		return 
+	}
 	timeout, diag := dataModel.Timeouts.Read(ctx, defaultTimeout) 
 	resp.Diagnostics.Append(diag...)
 	if diag.HasError() {
@@ -137,11 +137,11 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 	{{ end }}
 	{{ end }}
 
-  defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Update }}")
-  if err != nil {
+	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Update }}")
+	if err != nil {
 		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
-    return 
-  }
+		return 
+	}
 	timeout, diag := dataModel.Timeouts.Update(ctx, defaultTimeout)
 	resp.Diagnostics.Append(diag...)
 	if diag.HasError() {
@@ -198,11 +198,11 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 		return
 	}
 
-  defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Delete }}")
-  if err != nil {
+	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Delete }}")
+	if err != nil {
 		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
-    return 
-  }
+		return 
+	}
 	timeout, diag := dataModel.Timeouts.Delete(ctx, defaultTimeout)
 	resp.Diagnostics.Append(diag...)
 	if diag.HasError() {
