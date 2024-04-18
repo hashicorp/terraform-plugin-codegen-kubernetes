@@ -37,7 +37,7 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		Schema: SchemaGenerator{
 			Name:        cfg.Name,
 			Description: cfg.Description,
-			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, "")...),
+			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.ImmutableAttributes, "")...),
 		},
 	}
 }
@@ -69,7 +69,10 @@ func (g *ResourceGenerator) GenerateAutoCRUDHooksCode() string {
 // TODO create a walkAttributes function that abstracts the logic of traversing
 // the spec for attributes
 
-func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive []string, path string) AttributesGenerator {
+// FIXME this function has too many parameters now.
+//
+//	should maybe be part of ResourceGenerator.
+func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive, immutable []string, path string) AttributesGenerator {
 	generatedAttrs := AttributesGenerator{}
 	for _, attr := range attrs {
 		attributePath := path + attr.Name
@@ -83,6 +86,7 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 			Required:  stringInSlice(attributePath, required),
 			Computed:  stringInSlice(attributePath, computed),
 			Sensitive: stringInSlice(attributePath, sensitive),
+			Immutable: stringInSlice(attributePath, immutable),
 		}
 		switch {
 		case attr.Bool != nil:
@@ -90,21 +94,29 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 				generatedAttr.Description = *attr.Bool.Description
 			}
 			generatedAttr.AttributeType = BoolAttributeType
+			generatedAttr.PlanModifierType = BoolPlanModifierType
+			generatedAttr.PlanModifierPackage = BoolPlanModifierPackage
 		case attr.String != nil:
 			if attr.String.Description != nil {
 				generatedAttr.Description = *attr.String.Description
 			}
 			generatedAttr.AttributeType = StringAttributeType
+			generatedAttr.PlanModifierType = StringPlanModifierType
+			generatedAttr.PlanModifierPackage = StringPlanModifierPackage
 		case attr.Number != nil:
 			if attr.Number.Description != nil {
 				generatedAttr.Description = *attr.Number.Description
 			}
 			generatedAttr.AttributeType = NumberAttributeType
+			generatedAttr.PlanModifierType = NumberPlanModifierType
+			generatedAttr.PlanModifierPackage = NumberPlanModifierPackage
 		case attr.Int64 != nil:
 			if attr.Int64.Description != nil {
 				generatedAttr.Description = *attr.Int64.Description
 			}
 			generatedAttr.AttributeType = Int64AttributeType
+			generatedAttr.PlanModifierType = Int64PlanModifierType
+			generatedAttr.PlanModifierPackage = Int64PlanModifierPackage
 		case attr.Map != nil:
 			if attr.Map.Description != nil {
 				generatedAttr.Description = *attr.Map.Description
@@ -122,13 +134,13 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 				generatedAttr.Description = *attr.SingleNested.Description
 			}
 			generatedAttr.AttributeType = SingleNestedAttributeType
-			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, ignored, computed, required, sensitive, attributePath+".")
+			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, ignored, computed, required, sensitive, immutable, attributePath+".")
 		case attr.ListNested != nil:
 			if attr.ListNested.Description != nil {
 				generatedAttr.Description = *attr.ListNested.Description
 			}
 			generatedAttr.AttributeType = ListNestedAttributeType
-			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, ignored, computed, required, sensitive, attributePath+"[*].")
+			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, ignored, computed, required, sensitive, immutable, attributePath+"[*].")
 		}
 		generatedAttrs = append(generatedAttrs, generatedAttr)
 	}

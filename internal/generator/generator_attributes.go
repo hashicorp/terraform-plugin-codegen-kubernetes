@@ -6,10 +6,14 @@ type AttributeGenerator struct {
 	AttributeType string
 	ElementType   string
 
+	PlanModifierType    string
+	PlanModifierPackage string
+
 	Required    bool
 	Description string
 	Computed    bool
 	Sensitive   bool
+	Immutable   bool
 
 	NestedAttributes AttributesGenerator
 }
