@@ -145,8 +145,12 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 		if r.DefaultValueAttributes != nil {
 			defaultValuesCode := gen.GenerateDefaultValuesCode()
 			outputFilename = fmt.Sprintf("%s_default_values.go", r.OutputFilenamePrefix)
-			generator.WriteFormattedSourceFile(wd, outputFilename, defaultValuesCode)
-			slog.Info("Generated default values source file", "filename", outputFilename)
+			if ok, _ := os.Stat(filepath.Join(wd, outputFilename)); ok == nil {
+				generator.WriteFormattedSourceFile(wd, outputFilename, defaultValuesCode)
+				slog.Info("Generated default value file", "filename", outputFilename)
+			} else {
+				slog.Warn("File already generated. Delete to regenerate", "filename", outputFilename)
+			}
 		}
 
 		generatedResources = append(generatedResources, r)
