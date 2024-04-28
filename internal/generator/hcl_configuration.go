@@ -40,19 +40,15 @@ type ResourceConfig struct {
 	// IgnoredAttributes is a list of attribute paths to omit from the resource
 	IgnoredAttributes []string `hcl:"ignored_attributes,optional"`
 
-	// FIXME not implemented yet
 	// RequiredAttributes is a list of attribute paths to mark as required in the schema
 	RequiredAttributes []string `hcl:"required_attributes,optional"`
 
-	// FIXME not implemented yet
 	// ComputedAttributes is a list of attribute paths to mark as computed in the schema
 	ComputedAttributes []string `hcl:"computed_attributes,optional"`
 
-	// FIXME not implemented yet
 	// SensitiveAttributes is a list of attribute paths to mark as sensitive in the schema
 	SensitiveAttributes []string `hcl:"sensitive_attributes,optional"`
 
-	// FIXME not implemented yet
 	// ImmutableAttributes is a list of attribute paths to mark as requiring a forced
 	// replacement if changed in the schema
 	ImmutableAttributes []string `hcl:"immutable_attributes,optional"`
