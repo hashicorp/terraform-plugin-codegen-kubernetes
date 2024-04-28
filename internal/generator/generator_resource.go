@@ -2,6 +2,7 @@ package generator
 
 import (
 	"log/slog"
+	"path"
 	"time"
 
 	specresource "github.com/hashicorp/terraform-plugin-codegen-spec/resource"
@@ -43,6 +44,13 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 }
 
 func (g *ResourceGenerator) GenerateSchemaFunctionCode() string {
+	imports := getPlanModifierImports(g.Schema.Attributes)
+
+	if len(imports) > 0 {
+		imports = append(imports, path.Join(schemaImportPath, "planmodifier"))
+		g.Schema.Imports = imports
+	}
+
 	return renderTemplate(schemaFunctionTemplate, g)
 }
 
@@ -69,9 +77,7 @@ func (g *ResourceGenerator) GenerateAutoCRUDHooksCode() string {
 // TODO create a walkAttributes function that abstracts the logic of traversing
 // the spec for attributes
 
-// FIXME this function has too many parameters now.
-//
-//	should maybe be part of ResourceGenerator.
+// FIXME this function has too many parameters now, should maybe be part of ResourceGenerator.
 func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive, immutable []string, path string) AttributesGenerator {
 	generatedAttrs := AttributesGenerator{}
 	for _, attr := range attrs {
