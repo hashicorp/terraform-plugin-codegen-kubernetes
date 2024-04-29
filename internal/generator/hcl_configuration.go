@@ -55,7 +55,7 @@ type ResourceConfig struct {
 	// OpenAPIConfig configures options for the OpenAPI to Framework IR generator
 	OpenAPIConfig TerraformPluginGenOpenAPIConfig `hcl:"openapi,block"`
 
-	//
+	// List of attributes to include in generated default_values.go file
 	DefaultValueAttributes []string `hcl:"default_value_attributes,optional"`
 
 	// Disabled tells the generator to skip this configuration
