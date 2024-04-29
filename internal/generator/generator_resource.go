@@ -96,7 +96,7 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 			Required:     stringInSlice(attributePath, required),
 			Computed:     stringInSlice(attributePath, computed),
 			Sensitive:    stringInSlice(attributePath, sensitive),
-      Immutable: stringInSlice(attributePath, immutable),
+			Immutable:    stringInSlice(attributePath, immutable),
 			DefaultValue: stringInSlice(attributePath, default_values),
 		}
 		switch {
