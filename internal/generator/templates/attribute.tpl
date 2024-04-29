@@ -1,12 +1,15 @@
 MarkdownDescription: `{{ .Description }}`,
+
 {{- if .ElementType }}
 ElementType: types.{{ .ElementType }},
 {{- end }}
+
 {{- if .Required }}
 Required: true,
 {{- else }}
 Optional: true,
 {{- end }}
+
 {{- if .Computed }}
 Computed: true,
 {{- end }}
@@ -16,6 +19,13 @@ Default: {{.Name}}DefaultValue,
 {{- if .Sensitive }}
 Sensitive: true,
 {{- end }}
+
+{{- if .Immutable }}
+PlanModifiers: []planmodifier.{{ .PlanModifierType }}{
+  {{ .PlanModifierPackage }}.RequiresReplace(), 
+},
+{{- end }}
+
 {{- if .NestedAttributes }}
   {{- if eq .AttributeType "ListNestedAttribute" }}
   NestedObject: schema.NestedAttributeObject{

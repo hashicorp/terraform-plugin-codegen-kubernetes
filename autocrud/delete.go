@@ -31,9 +31,13 @@ func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiV
 	if err != nil {
 		return err
 	}
-	gvk := k8sschema.FromAPIVersionAndKind(apiVersion, kind)
+	gv, err := k8sschema.ParseGroupVersion(apiVersion)
+	if err != nil {
+		return err
+	}
+
 	restMapper := restmapper.NewDiscoveryRESTMapper(agr)
-	mapping, err := restMapper.RESTMapping(gvk.GroupKind(), apiVersion)
+	mapping, err := restMapper.RESTMapping(gv.WithKind(kind).GroupKind(), gv.Version)
 	if err != nil {
 		return err
 	}

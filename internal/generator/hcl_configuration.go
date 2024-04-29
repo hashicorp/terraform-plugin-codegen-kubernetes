@@ -1,6 +1,14 @@
 package generator
 
-import "github.com/hashicorp/hcl/v2/hclsimple"
+import (
+	"fmt"
+	"time"
+
+	"github.com/hashicorp/hcl/v2/hclsimple"
+)
+
+// SDKv2 had a 20m default timeout duration for all CRUD methods
+const defaultTimeoutDuration = "20m"
 
 // GeneratorConfig is the top level code generator configuration
 type GeneratorConfig struct {
@@ -32,19 +40,15 @@ type ResourceConfig struct {
 	// IgnoredAttributes is a list of attribute paths to omit from the resource
 	IgnoredAttributes []string `hcl:"ignored_attributes,optional"`
 
-	// FIXME not implemented yet
 	// RequiredAttributes is a list of attribute paths to mark as required in the schema
 	RequiredAttributes []string `hcl:"required_attributes,optional"`
 
-	// FIXME not implemented yet
 	// ComputedAttributes is a list of attribute paths to mark as computed in the schema
 	ComputedAttributes []string `hcl:"computed_attributes,optional"`
 
-	// FIXME not implemented yet
 	// SensitiveAttributes is a list of attribute paths to mark as sensitive in the schema
 	SensitiveAttributes []string `hcl:"sensitive_attributes,optional"`
 
-	// FIXME not implemented yet
 	// ImmutableAttributes is a list of attribute paths to mark as requiring a forced
 	// replacement if changed in the schema
 	ImmutableAttributes []string `hcl:"immutable_attributes,optional"`
@@ -106,6 +110,14 @@ type AfterHook struct {
 	Delete bool `hcl:"delete,optional"`
 }
 
+// Timeouts allowes overriding the 20m default timeout for a CRUD method
+type Timeouts struct {
+	Create string `hcl:"create,optional"`
+	Read   string `hcl:"read,optional"`
+	Update string `hcl:"update,optional"`
+	Delete string `hcl:"delete,optional"`
+}
+
 // GenerateConfig configures the options for what we should generate
 type GenerateConfig struct {
 	Schema          bool             `hcl:"schema,optional"`
@@ -114,6 +126,46 @@ type GenerateConfig struct {
 	CRUDAuto        bool             `hcl:"autocrud,optional"`
 	CRUDAutoOptions *CRUDAutoOptions `hcl:"autocrud_options,block"`
 	CRUDStubs       bool             `hcl:"crud_stubs,optional"`
+	Timeouts        *Timeouts        `hcl:"timeouts,block"`
+}
+
+func validateTimeoutDurations(r ResourceConfig) (ResourceConfig, error) {
+	timeoutsConfig := r.Generate.Timeouts
+	if timeoutsConfig == nil {
+		timeoutsConfig = &Timeouts{}
+		r.Generate.Timeouts = timeoutsConfig
+	}
+
+	if timeoutsConfig.Create == "" {
+		timeoutsConfig.Create = defaultTimeoutDuration
+	}
+
+	if timeoutsConfig.Read == "" {
+		timeoutsConfig.Read = defaultTimeoutDuration
+	}
+
+	if timeoutsConfig.Update == "" {
+		timeoutsConfig.Update = defaultTimeoutDuration
+	}
+
+	if timeoutsConfig.Delete == "" {
+		timeoutsConfig.Delete = defaultTimeoutDuration
+	}
+
+	values := map[string]string{
+		"create": timeoutsConfig.Create,
+		"read":   timeoutsConfig.Read,
+		"update": timeoutsConfig.Update,
+		"delete": timeoutsConfig.Delete,
+	}
+	for k, v := range values {
+		_, err := time.ParseDuration(v)
+		if err != nil {
+			return r, fmt.Errorf("failed to parse timeout value for %s: %v", k, err)
+		}
+	}
+
+	return r, nil
 }
 
 // ParseHCLConfig parses the .hcl configuraiton file and
@@ -124,6 +176,15 @@ func ParseHCLConfig(filename string) (GeneratorConfig, error) {
 	if err != nil {
 		return config, err
 	}
+
+	for i, r := range config.Resources {
+		rc, err := validateTimeoutDurations(r)
+		if err != nil {
+			return config, err
+		}
+		config.Resources[i] = rc
+	}
+
 	return config, nil
 }
 
