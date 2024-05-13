@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 // metadata.go contains code that ports and shims backwards compatibility for
 // the metadata of api responses
 package autocrud
