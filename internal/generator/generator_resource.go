@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"log/slog"
 	"path"
 	"time"
@@ -38,7 +39,7 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		Schema: SchemaGenerator{
 			Name:        cfg.Name,
 			Description: cfg.Description,
-			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.ImmutableAttributes, "")...),
+			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.Name, cfg.Generate.GenAIValidation, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.ImmutableAttributes, "")...),
 		},
 	}
 }
@@ -74,11 +75,15 @@ func (g *ResourceGenerator) GenerateAutoCRUDHooksCode() string {
 	return renderTemplate(autocrudHooksTemplate, g)
 }
 
+func (g *ResourceGenerator) GenerateGenAIValidatorsCode() string {
+	return generateValidator(fmt.Sprintf(fileHeader, g.ResourceConfig.Package), g.Schema.Attributes)
+}
+
 // TODO create a walkAttributes function that abstracts the logic of traversing
 // the spec for attributes
 
 // FIXME this function has too many parameters now, should maybe be part of ResourceGenerator.
-func GenerateAttributes(attrs specresource.Attributes, ignored, computed, required, sensitive, immutable []string, path string) AttributesGenerator {
+func GenerateAttributes(attrs specresource.Attributes, resourceName string, genAIValidation bool, ignored, computed, required, sensitive, immutable []string, path string) AttributesGenerator {
 	generatedAttrs := AttributesGenerator{}
 	for _, attr := range attrs {
 		attributePath := path + attr.Name
@@ -94,6 +99,7 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 			Sensitive: stringInSlice(attributePath, sensitive),
 			Immutable: stringInSlice(attributePath, immutable),
 		}
+
 		switch {
 		case attr.Bool != nil:
 			if attr.Bool.Description != nil {
@@ -102,6 +108,9 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 			generatedAttr.AttributeType = BoolAttributeType
 			generatedAttr.PlanModifierType = BoolPlanModifierType
 			generatedAttr.PlanModifierPackage = BoolPlanModifierPackage
+			if genAIValidation {
+				generatedAttr.GenAIValidatorType = resourceName + "_" + attr.Name + "_validator"
+			}
 		case attr.String != nil:
 			if attr.String.Description != nil {
 				generatedAttr.Description = *attr.String.Description
@@ -109,6 +118,9 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 			generatedAttr.AttributeType = StringAttributeType
 			generatedAttr.PlanModifierType = StringPlanModifierType
 			generatedAttr.PlanModifierPackage = StringPlanModifierPackage
+			if genAIValidation {
+				generatedAttr.GenAIValidatorType = resourceName + "_" + attr.Name + "_validator"
+			}
 		case attr.Number != nil:
 			if attr.Number.Description != nil {
 				generatedAttr.Description = *attr.Number.Description
@@ -116,6 +128,9 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 			generatedAttr.AttributeType = NumberAttributeType
 			generatedAttr.PlanModifierType = NumberPlanModifierType
 			generatedAttr.PlanModifierPackage = NumberPlanModifierPackage
+			if genAIValidation {
+				generatedAttr.GenAIValidatorType = resourceName + "_" + attr.Name + "_validator"
+			}
 		case attr.Int64 != nil:
 			if attr.Int64.Description != nil {
 				generatedAttr.Description = *attr.Int64.Description
@@ -123,6 +138,9 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 			generatedAttr.AttributeType = Int64AttributeType
 			generatedAttr.PlanModifierType = Int64PlanModifierType
 			generatedAttr.PlanModifierPackage = Int64PlanModifierPackage
+			if genAIValidation {
+				generatedAttr.GenAIValidatorType = resourceName + "_" + attr.Name + "_validator"
+			}
 		case attr.Map != nil:
 			if attr.Map.Description != nil {
 				generatedAttr.Description = *attr.Map.Description
@@ -140,13 +158,13 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 				generatedAttr.Description = *attr.SingleNested.Description
 			}
 			generatedAttr.AttributeType = SingleNestedAttributeType
-			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, ignored, computed, required, sensitive, immutable, attributePath+".")
+			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, resourceName+"_"+attr.Name, genAIValidation, ignored, computed, required, sensitive, immutable, attributePath+".")
 		case attr.ListNested != nil:
 			if attr.ListNested.Description != nil {
 				generatedAttr.Description = *attr.ListNested.Description
 			}
 			generatedAttr.AttributeType = ListNestedAttributeType
-			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, ignored, computed, required, sensitive, immutable, attributePath+"[*].")
+			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, resourceName+"_"+attr.Name, genAIValidation, ignored, computed, required, sensitive, immutable, attributePath+"[*].")
 		}
 		generatedAttrs = append(generatedAttrs, generatedAttr)
 	}
