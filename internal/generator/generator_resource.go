@@ -48,8 +48,9 @@ func (g *ResourceGenerator) GenerateSchemaFunctionCode() string {
 
 	if len(imports) > 0 {
 		imports = append(imports, path.Join(schemaImportPath, "planmodifier"))
-		g.Schema.Imports = imports
 	}
+
+	g.Schema.Imports = imports
 
 	return renderTemplate(schemaFunctionTemplate, g)
 }

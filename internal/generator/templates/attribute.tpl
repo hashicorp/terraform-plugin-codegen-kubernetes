@@ -24,6 +24,12 @@ PlanModifiers: []planmodifier.{{ .PlanModifierType }}{
 },
 {{- end }}
 
+{{- if .Validation }}
+Validators: []validator.{{ .ValidatorType }}{
+  validators.{{ .GeneratedValidator }}{}, 
+},
+{{- end }}
+
 {{- if .NestedAttributes }}
   {{- if eq .AttributeType "ListNestedAttribute" }}
   NestedObject: schema.NestedAttributeObject{
