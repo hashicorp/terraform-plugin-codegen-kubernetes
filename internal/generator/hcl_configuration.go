@@ -131,7 +131,6 @@ type CustomAttributes struct {
 	WaitForRollout               bool `hcl:"wait_for_rollout,optional"`
 	WaitForDefaultServiceAccount bool `hcl:"wait_for_default_service_account,optional"`
 	WaitForLoadBalancer          bool `hcl:"wait_for_load_balancer,optional"`
-	WaitForCompletion            bool `hcl:"wait_for_completion,optional"`
 }
 
 func validateTimeoutDurations(r ResourceConfig) (ResourceConfig, error) {
