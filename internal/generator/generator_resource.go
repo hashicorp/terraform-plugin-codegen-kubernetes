@@ -158,7 +158,7 @@ func GenerateCustomAttributes(cfg ResourceConfig) CustomAttributesGenerator {
 	return CustomAttributesGenerator{
 		WaitForRollout:               cfg.Generate.CustomAttributes.WaitForRollout,
 		WaitForDefaultServiceAccount: cfg.Generate.CustomAttributes.WaitForDefaultServiceAccount,
-		WaitForLoadBalancer:          cfg.Generate.CustomAttributes.WaitForLoadBalancer
+		WaitForLoadBalancer:          cfg.Generate.CustomAttributes.WaitForLoadBalancer,
 	}
 }
 
