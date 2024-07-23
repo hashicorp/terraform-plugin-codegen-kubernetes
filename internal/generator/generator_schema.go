@@ -5,10 +5,11 @@ import (
 )
 
 type SchemaGenerator struct {
-	Name        string
-	Description string
-	Attributes  AttributesGenerator
-	Imports     []string
+	Name             string
+	Description      string
+	Attributes       AttributesGenerator
+	CustomAttributes CustomAttributesGenerator
+	Imports          []string
 }
 
 func (g SchemaGenerator) String() string {

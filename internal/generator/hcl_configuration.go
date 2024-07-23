@@ -117,13 +117,21 @@ type Timeouts struct {
 
 // GenerateConfig configures the options for what we should generate
 type GenerateConfig struct {
-	Schema          bool             `hcl:"schema,optional"`
-	Overrides       bool             `hcl:"overrides,optional"`
-	Model           bool             `hcl:"model,optional"`
-	CRUDAuto        bool             `hcl:"autocrud,optional"`
-	CRUDAutoOptions *CRUDAutoOptions `hcl:"autocrud_options,block"`
-	CRUDStubs       bool             `hcl:"crud_stubs,optional"`
-	Timeouts        *Timeouts        `hcl:"timeouts,block"`
+	Schema           bool              `hcl:"schema,optional"`
+	Overrides        bool              `hcl:"overrides,optional"`
+	CustomAttributes *CustomAttributes `hcl:"custom_attributes,optional"`
+	Model            bool              `hcl:"model,optional"`
+	CRUDAuto         bool              `hcl:"autocrud,optional"`
+	CRUDAutoOptions  *CRUDAutoOptions  `hcl:"autocrud_options,block"`
+	CRUDStubs        bool              `hcl:"crud_stubs,optional"`
+	Timeouts         *Timeouts         `hcl:"timeouts,block"`
+}
+
+type CustomAttributes struct {
+	WaitForRollout               bool `hcl:"wait_for_rollout,optional"`
+	WaitForDefaultServiceAccount bool `hcl:"wait_for_default_service_account,optional"`
+	WaitForLoadBalancer          bool `hcl:"wait_for_load_balancer,optional"`
+	WaitForCompletion            bool `hcl:"wait_for_completion,optional"`
 }
 
 func validateTimeoutDurations(r ResourceConfig) (ResourceConfig, error) {

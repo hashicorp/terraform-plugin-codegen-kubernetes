@@ -13,6 +13,9 @@ var attributesTemplate string
 //go:embed templates/attribute.tpl
 var attributeTemplate string
 
+//go:embed templates/custom_attribute.tpl
+var customAttributeTemplate string
+
 //go:embed templates/schema.tpl
 var schemaTemplate string
 

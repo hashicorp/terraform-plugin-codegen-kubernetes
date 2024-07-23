@@ -36,9 +36,10 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		ResourceConfig:     cfg,
 		ModelFields:        append(modelFields, GenerateModelFields(spec.Schema.Attributes, cfg.IgnoredAttributes, "")...),
 		Schema: SchemaGenerator{
-			Name:        cfg.Name,
-			Description: cfg.Description,
-			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.ImmutableAttributes, "")...),
+			Name:             cfg.Name,
+			Description:      cfg.Description,
+			Attributes:       append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.ImmutableAttributes, "")...),
+			CustomAttributes: GenerateCustomAttributes(cfg),
 		},
 	}
 }
@@ -151,6 +152,15 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 		generatedAttrs = append(generatedAttrs, generatedAttr)
 	}
 	return generatedAttrs
+}
+
+func GenerateCustomAttributes(cfg ResourceConfig) CustomAttributesGenerator {
+	return CustomAttributesGenerator{
+		WaitForRollout:               cfg.Generate.CustomAttributes.WaitForRollout,
+		WaitForDefaultServiceAccount: cfg.Generate.CustomAttributes.WaitForDefaultServiceAccount,
+		WaitForLoadBalancer:          cfg.Generate.CustomAttributes.WaitForLoadBalancer,
+		WaitForCompletion:            cfg.Generate.CustomAttributes.WaitForCompletion,
+	}
 }
 
 func stringInSlice(str string, slice []string) bool {
