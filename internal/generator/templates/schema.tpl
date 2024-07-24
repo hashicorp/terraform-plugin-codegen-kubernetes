@@ -4,5 +4,4 @@ schema.Schema{
         "timeouts": timeouts.BlockAll(ctx),
     },
     {{ .Attributes }}
-    {{ .CustomAttributes }}
 }

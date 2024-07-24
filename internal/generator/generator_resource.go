@@ -24,6 +24,8 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		Description:   "The unique ID for this terraform resource",
 	}}
 
+	attributes = append(attributes, GenerateCustomAttributes(cfg)...)
+
 	modelFields := ModelFieldsGenerator{{
 		FieldName:     "ID",
 		Type:          StringModelType,
@@ -36,10 +38,9 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		ResourceConfig:     cfg,
 		ModelFields:        append(modelFields, GenerateModelFields(spec.Schema.Attributes, cfg.IgnoredAttributes, "")...),
 		Schema: SchemaGenerator{
-			Name:             cfg.Name,
-			Description:      cfg.Description,
-			Attributes:       append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.ImmutableAttributes, "")...),
-			CustomAttributes: GenerateCustomAttributes(cfg),
+			Name:        cfg.Name,
+			Description: cfg.Description,
+			Attributes:  append(attributes, GenerateAttributes(spec.Schema.Attributes, cfg.IgnoredAttributes, cfg.ComputedAttributes, cfg.RequiredAttributes, cfg.SensitiveAttributes, cfg.ImmutableAttributes, "")...),
 		},
 	}
 }
@@ -154,12 +155,34 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 	return generatedAttrs
 }
 
-func GenerateCustomAttributes(cfg ResourceConfig) CustomAttributesGenerator {
-	return CustomAttributesGenerator{
-		WaitForRollout:               cfg.Generate.CustomAttributes.WaitForRollout,
-		WaitForDefaultServiceAccount: cfg.Generate.CustomAttributes.WaitForDefaultServiceAccount,
-		WaitForLoadBalancer:          cfg.Generate.CustomAttributes.WaitForLoadBalancer,
+func GenerateCustomAttributes(cfg ResourceConfig) []AttributeGenerator {
+	if cfg.Generate.CustomAttributes == nil {
+		return nil
 	}
+
+	customAttribute := AttributeGenerator{
+		AttributeType: BoolAttributeType,
+	}
+
+	customAttributes := make([]AttributeGenerator, 0)
+
+	if cfg.Generate.CustomAttributes.WaitForDefaultServiceAccount {
+		customAttribute.Name = "wait_for_default_service_account"
+		customAttribute.Description = "Terraform will wait for the default service account to be created."
+		customAttributes = append(customAttributes, customAttribute)
+	}
+	if cfg.Generate.CustomAttributes.WaitForLoadBalancer {
+		customAttribute.Name = "wait_for_load_balancer"
+		customAttribute.Description = "Terraform will wait for the load balancer to have at least 1 endpoint before considering the resource created."
+		customAttributes = append(customAttributes, customAttribute)
+	}
+	if cfg.Generate.CustomAttributes.WaitForRollout {
+		customAttribute.Name = "wait_for_roll_out"
+		customAttribute.Description = "Wait for the rollout to complete. Defaults to true."
+		customAttributes = append(customAttributes, customAttribute)
+	}
+
+	return customAttributes
 }
 
 func stringInSlice(str string, slice []string) bool {

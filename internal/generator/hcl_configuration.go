@@ -119,7 +119,7 @@ type Timeouts struct {
 type GenerateConfig struct {
 	Schema           bool              `hcl:"schema,optional"`
 	Overrides        bool              `hcl:"overrides,optional"`
-	CustomAttributes *CustomAttributes `hcl:"custom_attributes,optional"`
+	CustomAttributes *CustomAttributes `hcl:"custom_attributes,block"`
 	Model            bool              `hcl:"model,optional"`
 	CRUDAuto         bool              `hcl:"autocrud,optional"`
 	CRUDAutoOptions  *CRUDAutoOptions  `hcl:"autocrud_options,block"`
