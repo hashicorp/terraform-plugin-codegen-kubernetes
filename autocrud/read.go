@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8sschema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -52,10 +53,17 @@ func Read(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVer
 		resourceInterface = client.Resource(mapping.Resource)
 	}
 
+	tflog.Debug(ctx, "Reading resource", map[string]any{
+		"name":      name,
+		"namespace": namespace,
+	})
 	res, err := resourceInterface.Get(ctx, name, v1.GetOptions{})
 	if err != nil {
 		return err
 	}
+	tflog.Debug(ctx, "Resource read successfully", map[string]any{
+		"response": res,
+	})
 
 	responseManifest := res.UnstructuredContent()
 

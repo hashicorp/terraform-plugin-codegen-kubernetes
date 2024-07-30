@@ -16,6 +16,7 @@ import (
 	"k8s.io/client-go/restmapper"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, apiVersion, kind string, model any) error {
@@ -65,6 +66,9 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 		return err
 	}
 
+	tflog.Debug(ctx, "Executing server-side apply operation", map[string]any{
+		"manifest": obj,
+	})
 	res, err := resourceInterface.Patch(ctx, obj.GetName(), patchtypes.ApplyPatchType, payload,
 		v1.PatchOptions{
 			// FIXME this should be configurable
@@ -74,6 +78,10 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 	if err != nil {
 		return err
 	}
+
+	tflog.Debug(ctx, "Server-side apply operation succeeded", map[string]any{
+		"response": res,
+	})
 
 	responseManifest := res.UnstructuredContent()
 	id := createID(responseManifest)
