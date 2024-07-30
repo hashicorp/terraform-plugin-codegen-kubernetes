@@ -13,7 +13,9 @@ Optional: true,
 {{- if .Computed }}
 Computed: true,
 {{- end }}
-
+{{- if .DefaultValue}}
+Default: {{.Name}}DefaultValue,
+{{- end -}}
 {{- if .Sensitive }}
 Sensitive: true,
 {{- end }}

@@ -37,6 +37,9 @@ var autocrudTemplate string
 //go:embed templates/resource_autocrud_hooks.go.tpl
 var autocrudHooksTemplate string
 
+//go:embed templates/resource_default_values.go.tpl
+var defaultValuesTemplate string
+
 //go:embed templates/resource_model.go.tpl
 var modelTemplate string
 
