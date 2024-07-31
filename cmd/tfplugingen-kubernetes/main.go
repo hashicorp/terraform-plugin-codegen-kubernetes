@@ -120,6 +120,18 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 			slog.Info("Generated autocrud source file", "filename", outputFilename)
 		}
 
+		// generate custom_attributes
+		if r.Generate.CustomAttributes != nil {
+			defaultValuesCode := gen.GenerateCustomAttributesCode()
+			outputFilename = fmt.Sprintf("%s_custom_attributes.go", r.OutputFilenamePrefix)
+			if ok, _ := os.Stat(filepath.Join(wd, outputFilename)); ok == nil {
+				generator.WriteFormattedSourceFile(wd, outputFilename, defaultValuesCode)
+				slog.Info("Generated custom attributes file", "filename", outputFilename)
+			} else {
+				slog.Warn("File already generated. Delete to regenerate", "filename", outputFilename)
+			}
+		}
+
 		if r.Generate.CRUDAutoOptions != nil {
 			if !r.Generate.CRUDAutoOptions.Hooks.IsEmpty() {
 				Hookscode := gen.GenerateAutoCRUDHooksCode()

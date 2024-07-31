@@ -24,7 +24,7 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		Description:   "The unique ID for this terraform resource",
 	}}
 
-	attributes = append(attributes, GenerateCustomAttributes(cfg)...)
+	attributes = append(attributes, AddCustomAttributes(cfg.Generate.CustomAttributes)...)
 
 	modelFields := ModelFieldsGenerator{{
 		FieldName:     "ID",
@@ -66,6 +66,10 @@ func (g *ResourceGenerator) GenerateResourceCode() string {
 
 func (g *ResourceGenerator) GenerateModelCode() string {
 	return renderTemplate(modelTemplate, g)
+}
+
+func (g *ResourceGenerator) GenerateCustomAttributesCode() string {
+	return renderTemplate(customAttributesTemplate, g)
 }
 
 func (g *ResourceGenerator) GenerateAutoCRUDCode() string {
@@ -155,34 +159,17 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 	return generatedAttrs
 }
 
-func GenerateCustomAttributes(cfg ResourceConfig) []AttributeGenerator {
-	if cfg.Generate.CustomAttributes == nil {
+func AddCustomAttributes(customAttributes []interface{}) []AttributeGenerator {
+	if len(customAttributes) == 0 {
 		return nil
 	}
+	attributes := make([]AttributeGenerator, 0)
 
-	customAttribute := AttributeGenerator{
-		AttributeType: BoolAttributeType,
+	for _, attribute_body := range customAttributes {
+		a := attribute_body.(AttributeGenerator)
+		attributes = append(attributes, a)
 	}
-
-	customAttributes := make([]AttributeGenerator, 0)
-
-	if cfg.Generate.CustomAttributes.WaitForDefaultServiceAccount {
-		customAttribute.Name = "wait_for_default_service_account"
-		customAttribute.Description = "Terraform will wait for the default service account to be created."
-		customAttributes = append(customAttributes, customAttribute)
-	}
-	if cfg.Generate.CustomAttributes.WaitForLoadBalancer {
-		customAttribute.Name = "wait_for_load_balancer"
-		customAttribute.Description = "Terraform will wait for the load balancer to have at least 1 endpoint before considering the resource created."
-		customAttributes = append(customAttributes, customAttribute)
-	}
-	if cfg.Generate.CustomAttributes.WaitForRollout {
-		customAttribute.Name = "wait_for_roll_out"
-		customAttribute.Description = "Wait for the rollout to complete. Defaults to true."
-		customAttributes = append(customAttributes, customAttribute)
-	}
-
-	return customAttributes
+	return attributes
 }
 
 func stringInSlice(str string, slice []string) bool {
