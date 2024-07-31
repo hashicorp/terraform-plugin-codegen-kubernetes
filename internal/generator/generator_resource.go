@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"log/slog"
 	"path"
 	"time"
@@ -66,10 +67,6 @@ func (g *ResourceGenerator) GenerateResourceCode() string {
 
 func (g *ResourceGenerator) GenerateModelCode() string {
 	return renderTemplate(modelTemplate, g)
-}
-
-func (g *ResourceGenerator) GenerateCustomAttributesCode() string {
-	return renderTemplate(customAttributesTemplate, g)
 }
 
 func (g *ResourceGenerator) GenerateAutoCRUDCode() string {
@@ -159,14 +156,33 @@ func GenerateAttributes(attrs specresource.Attributes, ignored, computed, requir
 	return generatedAttrs
 }
 
-func AddCustomAttributes(customAttributes []interface{}) []AttributeGenerator {
+func AddCustomAttributes(customAttributes []map[string]string) []AttributeGenerator {
 	if len(customAttributes) == 0 {
 		return nil
 	}
 	attributes := make([]AttributeGenerator, 0)
 
 	for _, attribute_body := range customAttributes {
-		a := attribute_body.(AttributeGenerator)
+		a := AttributeGenerator{
+			Name: attribute_body["name"],
+		}
+
+		switch aType := attribute_body["type"]; aType {
+		case "bool":
+			a.AttributeType = BoolAttributeType
+		case "string":
+			a.AttributeType = StringAttributeType
+		case "number":
+			a.AttributeType = NumberAttributeType
+		case "int64":
+			a.AttributeType = Int64AttributeType
+		default:
+			fmt.Printf("invalid type")
+			continue
+		}
+
+		a.Description = attribute_body["description"]
+
 		attributes = append(attributes, a)
 	}
 	return attributes
