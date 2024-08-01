@@ -1,7 +1,6 @@
 package generator
 
 import (
-	"fmt"
 	"log/slog"
 	"path"
 	"time"
@@ -177,7 +176,7 @@ func AddCustomAttributes(customAttributes []map[string]string) []AttributeGenera
 		case "int64":
 			a.AttributeType = Int64AttributeType
 		default:
-			fmt.Printf("invalid type")
+			slog.Warn("Ignoring custom attribute due to invalid type", "name", attribute_body["name"])
 			continue
 		}
 
