@@ -120,13 +120,14 @@ type Timeouts struct {
 
 // GenerateConfig configures the options for what we should generate
 type GenerateConfig struct {
-	Schema          bool             `hcl:"schema,optional"`
-	Overrides       bool             `hcl:"overrides,optional"`
-	Model           bool             `hcl:"model,optional"`
-	CRUDAuto        bool             `hcl:"autocrud,optional"`
-	CRUDAutoOptions *CRUDAutoOptions `hcl:"autocrud_options,block"`
-	CRUDStubs       bool             `hcl:"crud_stubs,optional"`
-	Timeouts        *Timeouts        `hcl:"timeouts,block"`
+	Schema           bool                `hcl:"schema,optional"`
+	Overrides        bool                `hcl:"overrides,optional"`
+	CustomAttributes []map[string]string `hcl:"custom_attributes,optional"`
+	Model            bool                `hcl:"model,optional"`
+	CRUDAuto         bool                `hcl:"autocrud,optional"`
+	CRUDAutoOptions  *CRUDAutoOptions    `hcl:"autocrud_options,block"`
+	CRUDStubs        bool                `hcl:"crud_stubs,optional"`
+	Timeouts         *Timeouts           `hcl:"timeouts,block"`
 	GenAIValidation bool             `hcl:"gen_ai_validation,optional"`
 }
 

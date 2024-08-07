@@ -28,6 +28,8 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		Description:   "The unique ID for this terraform resource",
 	}}
 
+	attributes = append(attributes, AddCustomAttributes(cfg.Generate.CustomAttributes)...)
+
 	modelFields := ModelFieldsGenerator{{
 		FieldName:     "ID",
 		Type:          StringModelType,
@@ -172,6 +174,38 @@ func GenerateAttributes(attrs specresource.Attributes, resourceName string, genA
 		generatedAttrs = append(generatedAttrs, generatedAttr)
 	}
 	return generatedAttrs
+}
+
+func AddCustomAttributes(customAttributes []map[string]string) []AttributeGenerator {
+	if len(customAttributes) == 0 {
+		return nil
+	}
+	attributes := make([]AttributeGenerator, 0)
+
+	for _, attribute_body := range customAttributes {
+		a := AttributeGenerator{
+			Name: attribute_body["name"],
+		}
+
+		switch aType := attribute_body["type"]; aType {
+		case "bool":
+			a.AttributeType = BoolAttributeType
+		case "string":
+			a.AttributeType = StringAttributeType
+		case "number":
+			a.AttributeType = NumberAttributeType
+		case "int64":
+			a.AttributeType = Int64AttributeType
+		default:
+			slog.Warn("Ignoring custom attribute due to invalid type", "name", attribute_body["name"])
+			continue
+		}
+
+		a.Description = attribute_body["description"]
+
+		attributes = append(attributes, a)
+	}
+	return attributes
 }
 
 func stringInSlice(str string, slice []string) bool {
