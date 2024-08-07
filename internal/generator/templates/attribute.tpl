@@ -24,6 +24,13 @@ PlanModifiers: []planmodifier.{{ .PlanModifierType }}{
 },
 {{- end }}
 
+{{/* TODO don't share PlanModifierType */}}
+{{- if ne .GenAIValidatorType "" }}
+Validators: []validator.{{ .PlanModifierType }}{
+  {{ .GenAIValidatorType }}{}, 
+},
+{{- end }}
+
 {{- if .NestedAttributes }}
   {{- if eq .AttributeType "ListNestedAttribute" }}
   NestedObject: schema.NestedAttributeObject{

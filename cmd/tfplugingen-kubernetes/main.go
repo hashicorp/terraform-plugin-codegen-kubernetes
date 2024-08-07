@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package main
 
 import (
@@ -139,6 +142,14 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 			outputFilename = fmt.Sprintf("%s_model_gen.go", r.OutputFilenamePrefix)
 			generator.WriteFormattedSourceFile(wd, outputFilename, crudStubCode)
 			slog.Info("Generated model source file", "filename", outputFilename)
+		}
+
+		// generate genAI Validators
+		if r.Generate.GenAIValidation {
+			genAIValidatorsCode := gen.GenerateGenAIValidatorsCode()
+			outputFilename = fmt.Sprintf("%s_validators_gen.go", r.OutputFilenamePrefix)
+			generator.WriteFormattedSourceFile(wd, outputFilename, genAIValidatorsCode)
+			slog.Info("Generated genAI based validators file", "filename", outputFilename)
 		}
 
 		generatedResources = append(generatedResources, r)

@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package autocrud
 
 import (
@@ -56,12 +59,21 @@ func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiV
 		resourceInterface = client.Resource(mapping.Resource)
 	}
 
+	tflog.Debug(ctx, "Executing delete operation", map[string]any{
+		"namespace": namespace,
+		"name":      name,
+	})
+
 	err = resourceInterface.Delete(ctx, name, v1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
 
 	if wait {
+		tflog.Debug(ctx, "Waiting for resource to be deleted", map[string]any{
+			"namespace": namespace,
+			"name":      name,
+		})
 		return waitForDeletion(ctx, resourceInterface, name)
 	}
 	return nil
@@ -69,7 +81,6 @@ func Delete(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiV
 
 func waitForDeletion(ctx context.Context, r dynamic.ResourceInterface, name string) error {
 	// TODO could look at usiung resourceInterface.Watch here instead of polling
-	tflog.Debug(ctx, "Waiting for resource to be deleted")
 
 	for {
 		_, err := r.Get(ctx, name, v1.GetOptions{})

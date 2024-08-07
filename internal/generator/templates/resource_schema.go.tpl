@@ -7,8 +7,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	
   {{- range $val := .Schema.Imports }}
   "{{ $val }}"
+  {{- end }}
+  {{- if .ResourceConfig.Generate.GenAIValidation }}
+  "github.com/hashicorp/terraform-plugin-framework/schema/validator"
   {{- end }}
 )
 

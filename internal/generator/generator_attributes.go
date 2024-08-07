@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package generator
 
 type AttributeGenerator struct {
@@ -9,11 +12,12 @@ type AttributeGenerator struct {
 	PlanModifierType    string
 	PlanModifierPackage string
 
-	Required    bool
-	Description string
-	Computed    bool
-	Sensitive   bool
-	Immutable   bool
+	Required           bool
+	Description        string
+	Computed           bool
+	Sensitive          bool
+	Immutable          bool
+	GenAIValidatorType string
 
 	NestedAttributes AttributesGenerator
 }

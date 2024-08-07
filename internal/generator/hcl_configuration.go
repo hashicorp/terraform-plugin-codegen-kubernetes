@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package generator
 
 import (
@@ -125,6 +128,7 @@ type GenerateConfig struct {
 	CRUDAutoOptions  *CRUDAutoOptions    `hcl:"autocrud_options,block"`
 	CRUDStubs        bool                `hcl:"crud_stubs,optional"`
 	Timeouts         *Timeouts           `hcl:"timeouts,block"`
+	GenAIValidation bool             `hcl:"gen_ai_validation,optional"`
 }
 
 func validateTimeoutDurations(r ResourceConfig) (ResourceConfig, error) {
