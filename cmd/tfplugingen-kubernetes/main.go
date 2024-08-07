@@ -144,6 +144,14 @@ func generateFrameworkCode(path string, config generator.GeneratorConfig) ([]gen
 			slog.Info("Generated model source file", "filename", outputFilename)
 		}
 
+		// generate genAI Validators
+		if r.Generate.GenAIValidation {
+			genAIValidatorsCode := gen.GenerateGenAIValidatorsCode()
+			outputFilename = fmt.Sprintf("%s_validators_gen.go", r.OutputFilenamePrefix)
+			generator.WriteFormattedSourceFile(wd, outputFilename, genAIValidatorsCode)
+			slog.Info("Generated genAI based validators file", "filename", outputFilename)
+		}
+
 		generatedResources = append(generatedResources, r)
 	}
 	return generatedResources, nil
