@@ -19,15 +19,6 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	if diag.HasError() {
 		return
 	}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Create -}}
-	r.BeforeCreate(ctx, req, resp, &dataModel)
-	{{ end }}
-	{{ end }}
-	{{ end }}
-	{{ end }}
 
 	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Create }}")
 	if err != nil {
@@ -41,6 +32,16 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	}
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
+
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Create -}}
+	r.BeforeCreate(ctx, req, resp, &dataModel)
+	{{ end }}
+	{{ end }}
+	{{ end }}
+	{{ end }}
 
 	err = autocrud.Create(ctx, r.clientGetter, r.APIVersion, r.Kind, &dataModel)
 	if err != nil {
@@ -57,6 +58,7 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 	{{ end }}
 	{{ end }}
 	{{ end }}
+
 	diags := resp.State.Set(ctx, &dataModel)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -67,15 +69,6 @@ func (r *{{ .ResourceConfig.Kind }}) Create(ctx context.Context, req resource.Cr
 func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var dataModel {{ .ResourceConfig.Kind }}Model
 
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Read -}}
-	r.BeforeRead(ctx, req, resp, &dataModel)
-	{{ end }}
-	{{ end }}
-	{{ end }}
-	{{ end }}
 	diag := req.State.Get(ctx, &dataModel)
 	resp.Diagnostics.Append(diag...)
 	if diag.HasError() {
@@ -95,7 +88,19 @@ func (r *{{ .ResourceConfig.Kind }}) Read(ctx context.Context, req resource.Read
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
-	err = autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req, &dataModel)
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Read -}}
+	r.BeforeRead(ctx, req, resp, &dataModel)
+	{{ end }}
+	{{ end }}
+	{{ end }}
+	{{ end }}
+
+	var id string
+    req.State.GetAttribute(ctx, path.Root("id"), &id)
+	err = autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, id, &dataModel)
 	if err != nil {
 		resp.Diagnostics.AddError("Error reading resource", err.Error())
 		return
@@ -127,16 +132,6 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Update -}}
-	r.BeforeUpdate(ctx, req, resp, &dataModel)
-	{{ end }}
-	{{ end }}
-	{{ end }}
-	{{ end }}
-
 	defaultTimeout, err := time.ParseDuration("{{ .ResourceConfig.Generate.Timeouts.Update }}")
 	if err != nil {
 		resp.Diagnostics.AddError("Error parsing timeout", err.Error())
@@ -149,6 +144,16 @@ func (r *{{ .ResourceConfig.Kind }}) Update(ctx context.Context, req resource.Up
 	}
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
+
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Update -}}
+	r.BeforeUpdate(ctx, req, resp, &dataModel)
+	{{ end }}
+	{{ end }}
+	{{ end }}
+	{{ end }}
 
 	err = autocrud.Update(ctx, r.clientGetter, r.Kind, r.APIVersion, &dataModel)
 	if err != nil {
@@ -180,16 +185,6 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 	waitForDeletion := false
 	{{- end }}
 
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
-	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Delete -}}
-	r.BeforeDelete(ctx, req, resp, &dataModel)
-	{{ end }}
-	{{ end }}
-	{{ end }}
-	{{ end }}
-
 	var dataModel {{ .ResourceConfig.Kind }}Model
 
 	diag := req.State.Get(ctx, &dataModel)
@@ -211,6 +206,16 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook -}}
+	{{ if .ResourceConfig.Generate.CRUDAutoOptions.Hooks.BeforeHook.Delete -}}
+	r.BeforeDelete(ctx, req, resp, &dataModel)
+	{{ end }}
+	{{ end }}
+	{{ end }}
+	{{ end }}
+
 	err = autocrud.Delete(ctx, r.clientGetter, r.Kind, r.APIVersion, req, waitForDeletion)
 	if err != nil {
 		resp.Diagnostics.AddError("Error deleting resource", err.Error())
@@ -229,5 +234,21 @@ func (r *{{ .ResourceConfig.Kind }}) Delete(ctx context.Context, req resource.De
 }
 
 func (r *{{ .ResourceConfig.Kind }}) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	var dataModel {{ .ResourceConfig.Kind }}Model
+
+	err := autocrud.Read(ctx, r.clientGetter, r.Kind, r.APIVersion, req.ID, &dataModel)
+	if err != nil {
+		resp.Diagnostics.AddError("Error importing resource", err.Error())
+		return
+	}
+
+	// awkward timeouts/types.Object issue https://github.com/hashicorp/terraform-plugin-framework-timeouts/issues/46 & https://github.com/hashicorp/terraform-plugin-framework/issues/716
+	var timeouts timeouts.Value
+	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	dataModel.Timeouts = timeouts
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &dataModel)...)
 }
