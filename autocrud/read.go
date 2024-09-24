@@ -6,8 +6,6 @@ package autocrud
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +14,10 @@ import (
 	"k8s.io/client-go/restmapper"
 )
 
-func Read(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVersion string, req resource.ReadRequest, model any) error {
+type StateGetter interface {
+}
+
+func Read(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVersion, id string, model any) error {
 	client, err := clientGetter.DynamicClient()
 	if err != nil {
 		return err
@@ -39,8 +40,6 @@ func Read(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVer
 		return err
 	}
 
-	var id string
-	req.State.GetAttribute(ctx, path.Root("id"), &id)
 	namespace, name := parseID(id)
 
 	var resourceInterface dynamic.ResourceInterface
@@ -68,13 +67,19 @@ func Read(ctx context.Context, clientGetter KubernetesClientGetter, kind, apiVer
 	responseManifest := res.UnstructuredContent()
 
 	responseMetadata := responseManifest["metadata"].(map[string]any)
-	// we are expanding only for the sake of retrieving metadata
+	// we are expanding only for the sake of retrieving metadata.labels/annotations
 	manifest := ExpandModel(model)
-	configMetadata := manifest["metadata"].(map[string]any)
+	// config could be nil if coming from an import
+	configMetadata := make(map[string]any)
+	configMetadata["labels"] = make(map[string]any)
+	configMetadata["annotations"] = make(map[string]any)
+	if manifest["metadata"] != nil {
+		configMetadata = manifest["metadata"].(map[string]any)
+	}
 
 	shimMetadata(responseMetadata, configMetadata, clientGetter.IgnoreLabels(), clientGetter.IgnoreAnnotations())
 
 	FlattenManifest(responseManifest, model)
-	setID(id, &model)
+	setID(id, model)
 	return nil
 }

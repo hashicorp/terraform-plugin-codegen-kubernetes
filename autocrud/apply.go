@@ -95,7 +95,7 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 	if err != nil {
 		return err
 	}
-	setID(id, &model)
+	setID(id, model)
 
 	return nil
 }
@@ -103,6 +103,6 @@ func serverSideApply(ctx context.Context, clientGetter KubernetesClientGetter, a
 func setID(ID string, model any) {
 	// FIXME: we shouldnt need reflection here. We should make some sort
 	//        of Model interface with SetID(), Expand(), Flatten()
-	idval := reflect.ValueOf(model).Elem().Elem().Elem().FieldByName("ID")
+	idval := reflect.ValueOf(model).Elem().FieldByName("ID")
 	idval.Set(reflect.ValueOf(types.StringValue(ID)))
 }
