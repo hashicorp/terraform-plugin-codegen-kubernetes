@@ -243,12 +243,14 @@ func (r *{{ .ResourceConfig.Kind }}) ImportState(ctx context.Context, req resour
 	}
 
 	// awkward timeouts/types.Object issue https://github.com/hashicorp/terraform-plugin-framework-timeouts/issues/46 & https://github.com/hashicorp/terraform-plugin-framework/issues/716
-	var timeouts timeouts.Value
-	resp.Diagnostics.Append(resp.State.GetAttribute(ctx, path.Root("timeouts"), &timeouts)...)
-	if resp.Diagnostics.HasError() {
-		return
+	dataModel.Timeouts = timeouts.Value{
+		Object: types.ObjectNull(map[string]attr.Type{
+			"create": types.StringType,
+			"delete": types.StringType,
+			"read":   types.StringType,
+			"update": types.StringType,
+		}),
 	}
-	dataModel.Timeouts = timeouts
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &dataModel)...)
 }
