@@ -56,6 +56,10 @@ type ResourceConfig struct {
 	// replacement if changed in the schema
 	ImmutableAttributes []string `hcl:"immutable_attributes,optional"`
 
+	// CustomAttributes is a list of non OpenAPI/backend attributes to generate using types.Dynamic in the schema/model
+	// but would be handled by the developer in a hook method
+	CustomAttributes []string `hcl:"custom_attributes,optional"`
+
 	// Generate controls generator specific options
 	Generate GenerateConfig `hcl:"generate,block"`
 
