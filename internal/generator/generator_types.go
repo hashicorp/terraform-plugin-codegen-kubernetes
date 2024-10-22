@@ -13,6 +13,7 @@ const (
 	ObjectAttributeType       = "ObjectAttribute"
 	SingleNestedAttributeType = "SingleNestedAttribute"
 	ListNestedAttributeType   = "ListNestedAttribute"
+	DynamicAttributeType      = "DynamicAttribute"
 )
 
 // TODO: we need to expland these types to include float64, list, map, object
@@ -25,10 +26,11 @@ const (
 )
 
 const (
-	BoolModelType   = "Bool"
-	StringModelType = "String"
-	NumberModelType = "Number"
-	Int64ModelType  = "Int64"
+	BoolModelType    = "Bool"
+	StringModelType  = "String"
+	NumberModelType  = "Number"
+	Int64ModelType   = "Int64"
+	DynamicModelType = "Dynamic"
 )
 
 const (

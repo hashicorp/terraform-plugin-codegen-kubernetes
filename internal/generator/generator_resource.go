@@ -35,6 +35,19 @@ func NewResourceGenerator(cfg ResourceConfig, spec specresource.Resource) Resour
 		AttributeName: "id",
 	}}
 
+	for _, cAttr := range cfg.CustomAttributes {
+		attributes = append(attributes, AttributeGenerator{
+			Name:          cAttr,
+			AttributeType: DynamicAttributeType,
+		})
+		modelFields = append(modelFields, ModelFieldGenerator{
+			FieldName:     snakeToCamel(cAttr),
+			Type:          DynamicModelType,
+			AttributeType: DynamicAttributeType,
+			AttributeName: cAttr,
+		})
+	}
+
 	return ResourceGenerator{
 		GeneratedTimestamp: time.Now(),
 		ResourceConfig:     cfg,
