@@ -38,6 +38,7 @@ const (
 	StringPlanModifierType = "String"
 	NumberPlanModifierType = "Number"
 	Int64PlanModifierType  = "Int64"
+	ObjectPlanModifierType = "Object"
 )
 
 const (
@@ -45,4 +46,5 @@ const (
 	StringPlanModifierPackage = "stringplanmodifier"
 	NumberPlanModifierPackage = "numberplanmodifier"
 	Int64PlanModifierPackage  = "int64planmodifier"
+	ObjectPlanModifierPackage = "objectplanmodifier"
 )

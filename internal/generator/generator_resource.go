@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"path"
+	"strings"
 	"time"
 
 	specresource "github.com/hashicorp/terraform-plugin-codegen-spec/resource"
@@ -119,7 +120,7 @@ func GenerateAttributes(attrs specresource.Attributes, resourceName string, genA
 		switch {
 		case attr.Bool != nil:
 			if attr.Bool.Description != nil {
-				generatedAttr.Description = *attr.Bool.Description
+				generatedAttr.Description = sanitizeDescription(*attr.Bool.Description)
 			}
 			generatedAttr.AttributeType = BoolAttributeType
 			generatedAttr.PlanModifierType = BoolPlanModifierType
@@ -129,7 +130,7 @@ func GenerateAttributes(attrs specresource.Attributes, resourceName string, genA
 			}
 		case attr.String != nil:
 			if attr.String.Description != nil {
-				generatedAttr.Description = *attr.String.Description
+				generatedAttr.Description = sanitizeDescription(*attr.String.Description)
 			}
 			generatedAttr.AttributeType = StringAttributeType
 			generatedAttr.PlanModifierType = StringPlanModifierType
@@ -139,7 +140,7 @@ func GenerateAttributes(attrs specresource.Attributes, resourceName string, genA
 			}
 		case attr.Number != nil:
 			if attr.Number.Description != nil {
-				generatedAttr.Description = *attr.Number.Description
+				generatedAttr.Description = sanitizeDescription(*attr.Number.Description)
 			}
 			generatedAttr.AttributeType = NumberAttributeType
 			generatedAttr.PlanModifierType = NumberPlanModifierType
@@ -149,7 +150,7 @@ func GenerateAttributes(attrs specresource.Attributes, resourceName string, genA
 			}
 		case attr.Int64 != nil:
 			if attr.Int64.Description != nil {
-				generatedAttr.Description = *attr.Int64.Description
+				generatedAttr.Description = sanitizeDescription(*attr.Int64.Description)
 			}
 			generatedAttr.AttributeType = Int64AttributeType
 			generatedAttr.PlanModifierType = Int64PlanModifierType
@@ -159,25 +160,27 @@ func GenerateAttributes(attrs specresource.Attributes, resourceName string, genA
 			}
 		case attr.Map != nil:
 			if attr.Map.Description != nil {
-				generatedAttr.Description = *attr.Map.Description
+				generatedAttr.Description = sanitizeDescription(*attr.Map.Description)
 			}
 			generatedAttr.AttributeType = MapAttributeType
 			generatedAttr.ElementType = getElementType(attr.Map.ElementType)
 		case attr.List != nil:
 			if attr.List.Description != nil {
-				generatedAttr.Description = *attr.List.Description
+				generatedAttr.Description = sanitizeDescription(*attr.List.Description)
 			}
 			generatedAttr.AttributeType = ListAttributeType
 			generatedAttr.ElementType = getElementType(attr.List.ElementType)
 		case attr.SingleNested != nil:
 			if attr.SingleNested.Description != nil {
-				generatedAttr.Description = *attr.SingleNested.Description
+				generatedAttr.Description = sanitizeDescription(*attr.SingleNested.Description)
 			}
 			generatedAttr.AttributeType = SingleNestedAttributeType
+			generatedAttr.PlanModifierType = ObjectPlanModifierType
+			generatedAttr.PlanModifierPackage = ObjectPlanModifierPackage
 			generatedAttr.NestedAttributes = GenerateAttributes(attr.SingleNested.Attributes, resourceName+"_"+attr.Name, genAIValidation, ignored, computed, required, sensitive, immutable, attributePath+".")
 		case attr.ListNested != nil:
 			if attr.ListNested.Description != nil {
-				generatedAttr.Description = *attr.ListNested.Description
+				generatedAttr.Description = sanitizeDescription(*attr.ListNested.Description)
 			}
 			generatedAttr.AttributeType = ListNestedAttributeType
 			generatedAttr.NestedAttributes = GenerateAttributes(attr.ListNested.NestedObject.Attributes, resourceName+"_"+attr.Name, genAIValidation, ignored, computed, required, sensitive, immutable, attributePath+"[*].")
@@ -287,4 +290,8 @@ func getModelElementType(e specschema.ElementType) string {
 		return Int64ModelType
 	}
 	panic("unsupported element type")
+}
+
+func sanitizeDescription(d string) string {
+	return strings.ReplaceAll(d, "`", "")
 }
