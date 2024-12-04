@@ -14,6 +14,11 @@ Optional: true,
 Computed: true,
 {{- end }}
 
+{{/* TODO support generic defaults */}}
+{{- if .DefaultNamespace }}
+Default: stringdefault.StaticString("default"),
+{{- end }}
+
 {{- if .Sensitive }}
 Sensitive: true,
 {{- end }}
