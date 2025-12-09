@@ -1,4 +1,4 @@
-// Copyright (c) HashiCorp, Inc.
+// Copyright IBM Corp. 2024
 // SPDX-License-Identifier: MPL-2.0
 
 // metadata.go contains code that ports and shims backwards compatibility for
