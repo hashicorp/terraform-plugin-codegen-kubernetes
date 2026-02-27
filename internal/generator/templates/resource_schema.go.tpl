@@ -14,6 +14,9 @@ import (
   {{- if .ResourceConfig.Generate.GenAIValidation }}
   "github.com/hashicorp/terraform-plugin-framework/schema/validator"
   {{- end }}
+  {{- if .Schema.DefaultNamespace }}
+  "github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+  {{- end }}
 )
 
 func (r *{{ .ResourceConfig.Kind }}) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

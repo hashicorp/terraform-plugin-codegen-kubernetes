@@ -69,6 +69,10 @@ func (g *ResourceGenerator) GenerateSchemaFunctionCode() string {
 		g.Schema.Imports = imports
 	}
 
+	if metadataNamespaceDefault(g.Schema.Attributes, "") {
+		g.Schema.DefaultNamespace = true
+	}
+
 	return renderTemplate(schemaFunctionTemplate, g)
 }
 

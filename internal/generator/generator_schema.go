@@ -11,7 +11,9 @@ type SchemaGenerator struct {
 	Name        string
 	Description string
 	Attributes  AttributesGenerator
-	Imports     []string
+	// TODO support generic defaults
+	DefaultNamespace bool
+	Imports          []string
 }
 
 func (g SchemaGenerator) String() string {
@@ -32,4 +34,20 @@ func getPlanModifierImports(a AttributesGenerator) []string {
 
 	// FIXME: this will need to dedupe
 	return imports
+}
+
+// Recursively marks attributes that are metadata.namespace as a quick and dirty
+// fix for having namespace support a default value of "default".
+// Returns true if it has found any matching attribute in the resource.
+// TODO handle lists?
+func metadataNamespaceDefault(a AttributesGenerator, parent string) bool {
+	for i := range a {
+		if a[i].Name == "namespace" && parent == "metadata" {
+			a[i].DefaultNamespace = true
+			return true
+		} else if len(a[i].NestedAttributes) > 0 {
+			return metadataNamespaceDefault(a[i].NestedAttributes, a[i].Name)
+		}
+	}
+	return false
 }

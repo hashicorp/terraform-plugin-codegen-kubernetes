@@ -12,11 +12,13 @@ type AttributeGenerator struct {
 	PlanModifierType    string
 	PlanModifierPackage string
 
-	Required           bool
-	Description        string
-	Computed           bool
-	Sensitive          bool
-	Immutable          bool
+	Required    bool
+	Description string
+	Computed    bool
+	Sensitive   bool
+	Immutable   bool
+	// TODO implement generic default support
+	DefaultNamespace   bool
 	GenAIValidatorType string
 
 	NestedAttributes AttributesGenerator
